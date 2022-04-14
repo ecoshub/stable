@@ -1,4 +1,4 @@
-package table
+package stable
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	// ErrNotSupported error not supported table conversion
 	ErrNotSupported error = errors.New("not supported type")
 )
 

@@ -1,6 +1,0 @@
--   max length for colum size to add ... to start or end
--   selecting border style
--   show hide column
--   print type for bytes (string|[]byte) in structs
--   cache the print value if no change has made
--   activate "hidden" feature

@@ -1,4 +1,4 @@
-package style
+package stable
 
 const (
 	// AlignementLeft padding type left

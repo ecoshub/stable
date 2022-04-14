@@ -1,11 +1,15 @@
-package main
+package stable
 
 import (
 	"fmt"
-	"stable/field"
-	"stable/style"
-	"stable/table"
 )
+
+type Person struct {
+	Age    int     `table:"Age"`
+	Height float64 `table:"Height"`
+	Name   string  `table:"Name"`
+	Male   bool    `table:"Male"`
+}
 
 func printStructArray() {
 
@@ -16,7 +20,7 @@ func printStructArray() {
 		{Name: "Rosa Daniels", Age: 31, Height: 1.80, Male: true},
 	}
 
-	t, err := table.ToTable(persons)
+	t, err := ToTable(persons)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -32,7 +36,7 @@ func printStruct() {
 		Height: 1.8,
 		Male:   true,
 	}
-	t, err := table.ToTable(p)
+	t, err := ToTable(p)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -41,7 +45,7 @@ func printStruct() {
 }
 
 func test() {
-	table := table.New("Benchmark of Hashing")
+	table := New("Benchmark of Hashing")
 
 	table.AddFields(
 		"File",
@@ -50,9 +54,9 @@ func test() {
 		"Time (ms)",
 	)
 
-	table.AddFieldWithOptions("Proportion (%)", &field.Options{
+	table.AddFieldWithOptions("Proportion (%)", &Options{
 		Format:     "%0.2f",
-		Alignement: style.AlignementCenter,
+		Alignement: AlignementCenter,
 	})
 
 	table.Row("/var/log/system/test/crontab.log", 12.515, 14.0, "32", 0.223)
@@ -156,12 +160,12 @@ var (
 
 func anonymus() {
 	for i, v := range values {
-		t, err := table.ToTable(v)
+		t, err := ToTable(v)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		t.SetStyle(style.BorderStylePrintableLine)
+		t.SetStyle(BorderStylePrintableLine)
 		t.SetCaption(fmt.Sprintf("%d. table", i+1))
 		fmt.Println(t)
 	}

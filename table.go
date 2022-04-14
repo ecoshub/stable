@@ -1,28 +1,24 @@
-package table
+package stable
 
 import (
-	"errors"
 	"fmt"
-	"stable/field"
-	"stable/process"
-	"stable/style"
 )
 
 // STable simple table main struct
 type STable struct {
 	caption       string
-	fields        []*field.Field
+	fields        []*Field
 	rows          [][]interface{}
 	rowValues     [][]string
 	columSizeList []int
-	borderStyle   *style.BorderStyle
+	borderStyle   *BorderStyle
 }
 
 // New new table, first param is table caption if given
 func New(caption string) *STable {
-	bs, _ := style.GetStyle(style.BorderStylePrintableLine)
+	bs, _ := getStyle(BorderStylePrintableLine)
 	st := &STable{
-		fields:      make([]*field.Field, 0, 8),
+		fields:      make([]*Field, 0, 8),
 		rows:        make([][]interface{}, 0, 8),
 		rowValues:   make([][]string, 0, 8),
 		borderStyle: bs,
@@ -64,44 +60,35 @@ func (st *STable) Caption() string {
 
 // AddField adds a field with name
 func (st *STable) AddField(name string) {
-	f := field.NewField(name)
+	f := NewField(name)
 	st.fields = append(st.fields, f)
 }
 
 // AddFieldWithOptions adds a field with options
-func (st *STable) AddFieldWithOptions(name string, opts *field.Options) {
-	f := field.NewFieldWithOptions(name, opts)
+func (st *STable) AddFieldWithOptions(name string, opts *Options) {
+	f := NewFieldWithOptions(name, opts)
 	st.fields = append(st.fields, f)
 }
 
-func (st *STable) SetFields(fields ...*field.Field) {
-	st.fields = fields
-}
-
-func (st *STable) GetField(index int) *field.Field {
+// GetField GetField
+func (st *STable) GetField(index int) *Field {
 	if index < len(st.fields) {
 		return st.fields[index]
 	}
 	return nil
 }
 
-func (st *STable) GetFieldWithName(name string) *field.Field {
+// GetFieldWithName GetFieldWithName
+func (st *STable) GetFieldWithName(name string) *Field {
 	for _, f := range st.fields {
-		if f.Name() == name {
+		if f.name == name {
 			return f
 		}
 	}
 	return nil
 }
 
-func (st *STable) SetField(index int, f *field.Field) error {
-	if index < len(st.fields) {
-		st.fields[index] = f
-		return nil
-	}
-	return errors.New("field not found")
-}
-
+// Row add row
 func (st *STable) Row(values ...interface{}) {
 	if len(values) > len(st.fields) {
 		err := fmt.Errorf("exrta value(s) at row '%d'. value(s): %v", len(st.rows)+1, values[len(st.fields):])
@@ -111,8 +98,9 @@ func (st *STable) Row(values ...interface{}) {
 	st.rows = append(st.rows, values)
 }
 
-func (st *STable) SetStyle(styleName style.BorderStyleName) error {
-	styl, err := style.GetStyle(styleName)
+// SetStyle set border style default is "printableBorderStyle"
+func (st *STable) SetStyle(styleName borderStyleName) error {
+	styl, err := getStyle(styleName)
 	if err != nil {
 		return err
 	}
@@ -123,7 +111,7 @@ func (st *STable) SetStyle(styleName style.BorderStyleName) error {
 func (st *STable) getFieldNames() []string {
 	n := make([]string, len(st.fields))
 	for i, f := range st.fields {
-		n[i] = f.Name()
+		n[i] = f.GetName()
 	}
 	return n
 }
@@ -131,7 +119,7 @@ func (st *STable) getFieldNames() []string {
 func addPaddingToValues(values []string) []string {
 	padded := make([]string, len(values))
 	for i := range values {
-		padded[i] = process.AddExtraPadding(values[i])
+		padded[i] = addExtraPadding(values[i])
 	}
 	return padded
 }
@@ -139,7 +127,7 @@ func addPaddingToValues(values []string) []string {
 func (st *STable) calculateColumnSizeList() {
 	st.columSizeList = make([]int, len(st.fields))
 	for i, f := range st.fields {
-		st.columSizeList[i] = len(process.AddExtraPadding(f.Name()))
+		st.columSizeList[i] = len(addExtraPadding(f.GetName()))
 	}
 	st.rowValues = make([][]string, len(st.rows))
 	for i := range st.rows {
@@ -148,7 +136,7 @@ func (st *STable) calculateColumnSizeList() {
 		for j := range row {
 			f := st.GetField(j)
 			val := row[j]
-			s := f.ToString(val)
+			s := f.toString(val)
 			if len(s) > st.columSizeList[j] {
 				st.columSizeList[j] = len(s)
 			}
@@ -168,10 +156,10 @@ func (st *STable) adjustColumnSizes() {
 }
 
 func (st *STable) createHeader() string {
-	sep := st.borderStyle.Get(style.BorderStyleIndexHorizontal)
+	sep := st.borderStyle.get(borderStyleIndexHorizontal)
 	s := sep
 	for i, f := range st.fields {
-		val, err := style.DoPadding(f.Name(), st.columSizeList[i], style.AlignementCenter)
+		val, err := doPadding(f.GetName(), st.columSizeList[i], AlignementCenter)
 		if err != nil {
 			fmt.Println(err)
 			continue
@@ -185,19 +173,19 @@ func (st *STable) createHeader() string {
 	return s
 }
 
-func createColumn(bs *style.BorderStyle, fields []*field.Field, values []string, columnSizeList []int) string {
-	sep := bs.Get(style.BorderStyleIndexHorizontal)
+func createColumn(bs *BorderStyle, fields []*Field, values []string, columnSizeList []int) string {
+	sep := bs.get(borderStyleIndexHorizontal)
 	s := sep
 	for i, f := range fields {
 		var val string
 		var err error
 		if i < len(values) {
-			val, err = style.DoPadding(values[i], columnSizeList[i], f.Padding())
+			val, err = doPadding(values[i], columnSizeList[i], f.GetAlignement())
 			if err != nil {
-				val, _ = style.DoPadding("ERR", columnSizeList[i], style.AlignementCenter)
+				val, _ = doPadding("ERR", columnSizeList[i], AlignementCenter)
 			}
 		} else {
-			val, _ = style.DoPadding("", columnSizeList[i], style.AlignementCenter)
+			val, _ = doPadding("", columnSizeList[i], AlignementCenter)
 		}
 		s += val
 		if i != len(fields)-1 {
@@ -210,7 +198,7 @@ func createColumn(bs *style.BorderStyle, fields []*field.Field, values []string,
 
 func (st *STable) String() string {
 	st.calculateColumnSizeList()
-	generic, topBorder, midBorder, botBorder := style.CreateBorders(st.borderStyle, st.columSizeList)
+	generic, topBorder, midBorder, botBorder := createBorders(st.borderStyle, st.columSizeList)
 
 	s := ""
 	if st.caption != "" {
@@ -231,23 +219,23 @@ func (st *STable) String() string {
 	return s
 }
 
-func createCaptionBar(bs *style.BorderStyle, caption string, genericBorder string) string {
+func createCaptionBar(bs *BorderStyle, caption string, genericBorder string) string {
 	tot := len(genericBorder) - 2
-	caption, _ = style.DoPadding(caption, tot, style.AlignementCenter)
+	caption, _ = doPadding(caption, tot, AlignementCenter)
 
-	captionTopBorder := style.StyleTheBorder(genericBorder,
-		bs.Get(style.BorderStyleIndexTopLeft),
-		bs.Get(style.BorderStyleIndexVertical),
-		bs.Get(style.BorderStyleIndexTopRight),
-		bs.Get(style.BorderStyleIndexVertical),
+	captionTopBorder := styleTheBorder(genericBorder,
+		bs.get(borderStyleIndexTopLeft),
+		bs.get(borderStyleIndexVertical),
+		bs.get(borderStyleIndexTopRight),
+		bs.get(borderStyleIndexVertical),
 	)
-	captionMiddleBordder := style.StyleTheBorder(genericBorder,
-		bs.Get(style.BorderStyleIndexMidLeft),
-		bs.Get(style.BorderStyleIndexTopCenter),
-		bs.Get(style.BorderStyleIndexMidRight),
-		bs.Get(style.BorderStyleIndexVertical),
+	captionMiddleBordder := styleTheBorder(genericBorder,
+		bs.get(borderStyleIndexMidLeft),
+		bs.get(borderStyleIndexTopCenter),
+		bs.get(borderStyleIndexMidRight),
+		bs.get(borderStyleIndexVertical),
 	)
-	hor := bs.Get(style.BorderStyleIndexHorizontal)
+	hor := bs.get(borderStyleIndexHorizontal)
 	s := ""
 	s += captionTopBorder + "\n"
 	s += hor + caption + hor + "\n"

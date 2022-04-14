@@ -1,4 +1,4 @@
-package style
+package stable
 
 import (
 	"errors"
@@ -6,8 +6,8 @@ import (
 	"math"
 )
 
-// DoPadding padding to a value with space size and padding type
-func DoPadding(value string, colunSize int, paddingType string) (string, error) {
+// doPadding padding to a value with space size and padding type
+func doPadding(value string, colunSize int, paddingType string) (string, error) {
 	valueLength := len([]rune(value))
 	padding := colunSize - valueLength
 
