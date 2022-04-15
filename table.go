@@ -18,6 +18,8 @@ type STable struct {
 	columSizeList  []int
 	borderStyle    *BorderStyle
 	generalPadding int
+	changed        bool
+	cache          string
 }
 
 // New new table, first param is table caption if given
@@ -48,6 +50,7 @@ func (st *STable) AddFields(fieldNames ...string) *STable {
 	for _, fn := range fieldNames {
 		st.AddField(fn)
 	}
+	st.changed = true
 	return st
 }
 
@@ -58,6 +61,8 @@ func (st *STable) SetCaption(caption string) {
 		caption += "..."
 	}
 	st.caption = caption
+	st.changed = true
+
 }
 
 // GetGeneralPadding get general table padding
@@ -68,6 +73,7 @@ func (st *STable) GetGeneralPadding() int {
 // SetGeneralPadding set general table padding
 func (st *STable) SetGeneralPadding(padding int) {
 	st.generalPadding = padding
+	st.changed = true
 }
 
 // Caption get caption of table
@@ -79,12 +85,14 @@ func (st *STable) Caption() string {
 func (st *STable) AddField(name string) {
 	f := newField(name)
 	st.fields = append(st.fields, f)
+	st.changed = true
 }
 
 // AddFieldWithOptions adds a field with options
 func (st *STable) AddFieldWithOptions(name string, opts *Options) {
 	f := NewFieldWithOptions(name, opts)
 	st.fields = append(st.fields, f)
+	st.changed = true
 }
 
 // GetField GetField
@@ -108,11 +116,12 @@ func (st *STable) GetFieldWithName(name string) *Field {
 // Row add row
 func (st *STable) Row(values ...interface{}) {
 	if len(values) > len(st.fields) {
-		err := fmt.Errorf("exrta value(s) at row '%d'. value(s): %v", len(st.rows)+1, values[len(st.fields):])
+		err := fmt.Errorf("extra value(s) at row '%d'. value(s): %v", len(st.rows)+1, values[len(st.fields):])
 		fmt.Println(err.Error())
 		values = values[:len(st.fields)]
 	}
 	st.rows = append(st.rows, values)
+	st.changed = true
 }
 
 // SetStyle set border style default is "printableBorderStyle"
@@ -122,5 +131,6 @@ func (st *STable) SetStyle(styleName borderStyleName) error {
 		return err
 	}
 	st.borderStyle = style
+	st.changed = true
 	return nil
 }

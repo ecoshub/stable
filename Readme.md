@@ -99,6 +99,5 @@ anonymous struct array example:
 
 ## Whats Next?
 -   show/hide feature for fields
--   cache system for optimization purpose
 -	new option 'char limit'
 -	change field header alignment (left|center|right)

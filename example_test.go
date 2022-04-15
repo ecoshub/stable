@@ -27,7 +27,7 @@ func ExampleNew() {
 	// +-------------------+----------+-------+
 }
 
-func ExampleSetAlignment() {
+func ExampleSetAlignment_Field() {
 	// create a table
 	table := New("table caption")
 
@@ -54,7 +54,7 @@ func ExampleSetAlignment() {
 	// +-------------------+----------+-------+
 }
 
-func ExampleSetOption() {
+func ExampleSetOption_Field() {
 	// create a table
 	table := New("table caption")
 

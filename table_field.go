@@ -15,8 +15,9 @@ const (
 // Field object
 // every field object is a column
 type Field struct {
-	name string
-	opts *Options
+	name    string
+	opts    *Options
+	changed bool
 }
 
 // Options field options
@@ -58,6 +59,7 @@ func (f *Field) SetName(name string) {
 		return
 	}
 	f.name = name
+	f.changed = true
 }
 
 // GetAlignment GetAlignment
@@ -78,6 +80,7 @@ func (f *Field) SetAlignment(alignment alignment) {
 		return
 	}
 	f.opts.Alignment = alignment
+	f.changed = true
 }
 
 // AlignCenter easy access alignment choices
@@ -105,6 +108,8 @@ func (f *Field) SetOption(opts *Options) {
 		opts.Alignment = DefaultAlignment
 	}
 	f.opts = opts
+	f.changed = true
+
 }
 
 func (f *Field) toString(value interface{}, paddingAmount int) string {
