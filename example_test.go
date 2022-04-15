@@ -307,6 +307,7 @@ func ExampleToTable_map_array() {
 	// |  1642377600000  |  981c8036-f017-4b15-920c-4b0c73948cf4  |  mena    |  1       |  jenkins99  |
 	// +-----------------+----------------------------------------+----------+----------+-------------+
 }
+
 func ExampleToTable_json() {
 	// example byte array ( json encoded )
 	j := []byte(`{"index": 1,"guid": "22c5c5c7-e3b8-40ec-9a83-450bc28c81df","isActive": true,"balance": "$2,057.64","picture": "http://placehold.it/32x32","age": 27}`)
@@ -417,4 +418,61 @@ func ExampleToTable_csv() {
 	// |  113   |  Aurore     |  Franza    |  Aurore.Franza@yopmail.com      |  Aurore.Franza@gmail.com      |  doctor          |
 	// |  1099  |  Cissiee    |  Trey      |  Cissiee.Trey@yopmail.com       |  Cissiee.Trey@gmail.com       |  developer       |
 	// +--------+-------------+------------+---------------------------------+-------------------------------+------------------+
+}
+func ExampleHide_Field() {
+	t := time.Date(2022, 01, 17, 0, 0, 0, 0, time.UTC)
+	user := []map[string]interface{}{
+		{
+			"username":   "ecoshub",
+			"password":   "9b03c12b-ca05-4654-927a-56feb23cb8b3",
+			"last_login": t.UnixMilli(),
+			"region":     "mena",
+			"status":     1,
+		},
+		{
+			"username":   "jenkins99",
+			"password":   "981c8036-f017-4b15-920c-4b0c73948cf4",
+			"last_login": t.UnixMilli(),
+			"region":     "mena",
+			"status":     1,
+		},
+	}
+
+	// convert struct array to table
+	table, err := ToTable(user)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// add a caption
+	table.SetCaption("user info")
+
+	// print the table
+	fmt.Println(table)
+
+	// lets hie some fields (status, region)
+	table.GetFieldByName("status").Hide()
+	table.GetFieldByName("region").Hide()
+
+	// lets print the table again
+	fmt.Println(table)
+	// output:
+	// +----------------------------------------------------------------------------------------------+
+	// |                                           user info                                          |
+	// |----------------------------------------------------------------------------------------------|
+	// |    last_login   |                password                |  region  |  status  |   username  |
+	// |-----------------+----------------------------------------+----------+----------+-------------|
+	// |  1642377600000  |  9b03c12b-ca05-4654-927a-56feb23cb8b3  |  mena    |  1       |  ecoshub    |
+	// |  1642377600000  |  981c8036-f017-4b15-920c-4b0c73948cf4  |  mena    |  1       |  jenkins99  |
+	// +-----------------+----------------------------------------+----------+----------+-------------+
+
+	// +------------------------------------------------------------------------+
+	// |                                user info                               |
+	// |------------------------------------------------------------------------|
+	// |    last_login   |                password                |   username  |
+	// |-----------------+----------------------------------------+-------------|
+	// |  1642377600000  |  9b03c12b-ca05-4654-927a-56feb23cb8b3  |  ecoshub    |
+	// |  1642377600000  |  981c8036-f017-4b15-920c-4b0c73948cf4  |  jenkins99  |
+	// +-----------------+----------------------------------------+-------------+
 }
