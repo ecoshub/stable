@@ -1,30 +1,16 @@
 package stable
 
 import (
-	"errors"
 	"reflect"
-)
-
-var (
-	ErrNoStruct error = errors.New("only struct type is supported")
-	ErrNoArray  error = errors.New("only array|slice type is supported")
 )
 
 func structArrayToTable(s interface{}) (*STable, error) {
 	t := reflect.TypeOf(s)
 	v := reflect.ValueOf(s)
 
-	if t.Kind() != reflect.Array && t.Kind() != reflect.Slice {
-		return nil, ErrNoArray
-	}
-
 	te := t.Elem()
 	if te.Kind() == reflect.Ptr {
 		te = te.Elem()
-	}
-
-	if te.Kind() != reflect.Struct {
-		return nil, ErrNoStruct
 	}
 
 	caption := t.Name()
@@ -56,10 +42,6 @@ func structToTable(s interface{}) (*STable, error) {
 	if t.Kind() == reflect.Ptr {
 		v = reflect.Indirect(v)
 		t = v.Type()
-	}
-
-	if t.Kind() != reflect.Struct {
-		return nil, ErrNoStruct
 	}
 
 	caption := t.Name()

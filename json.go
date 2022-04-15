@@ -7,9 +7,11 @@ import (
 )
 
 var (
+	// ErrNullJSON error null json
 	ErrNullJSON error = errors.New("null json")
 )
 
+// jsonSwitch switch for array or object type json
 func jsonSwitch(j []byte) (*STable, error) {
 	if len(j) == 0 {
 		return nil, ErrNullJSON

@@ -2,14 +2,18 @@ package stable
 
 import (
 	"fmt"
+	"strings"
 )
 
 const (
-	// DefaultFieldName dedfault field name
-	DefaultFieldName string = "unamed_field"
+	// NilValueString if a value is nil prints this
+	NilValueString string = "-"
+	// FieldIsNil if field pointer is nil return this line
+	FieldIsNil string = "field is nil."
 )
 
-// Field Field object
+// Field object
+// every field object is a column
 type Field struct {
 	name string
 	opts *Options
@@ -17,19 +21,22 @@ type Field struct {
 
 // Options field options
 type Options struct {
-	Format     string
-	Alignement string
+	Format    string
+	Alignment alignment
 }
 
-// NewField new field with only name option
-func NewField(name string) *Field {
-	return &Field{name: name, opts: &Options{Alignement: AlignementLeft}}
+// creates a new field with name
+func newField(name string) *Field {
+	return &Field{name: name, opts: &Options{Alignment: DefaultAlignment}}
 }
 
 // NewFieldWithOptions NewFieldWithOptions
 func NewFieldWithOptions(name string, opts *Options) *Field {
-	if opts.Alignement == "" {
-		opts.Alignement = DefaultAlignementForValues
+	if opts == nil {
+		return newField(name)
+	}
+	if opts.Alignment == "" {
+		opts.Alignment = DefaultAlignment
 	}
 	return &Field{
 		name: name,
@@ -37,45 +44,10 @@ func NewFieldWithOptions(name string, opts *Options) *Field {
 	}
 }
 
-// GetAlignement GetAlignement
-func (f *Field) GetAlignement() string {
-	if f == nil {
-		return "field is null"
-	}
-	if f.opts == nil {
-		return "unknown_padding"
-	}
-	return f.opts.Alignement
-}
-
-// SetAlignement SetAlignement.
-func (f *Field) SetAlignement(alignement string) {
-	if f == nil {
-		fmt.Println("field is null. SetAlignement()")
-		return
-	}
-	f.opts.Alignement = alignement
-}
-
-// AlignCenter easy access alignement choices
-func (f *Field) AlignCenter() {
-	f.SetAlignement(AlignementCenter)
-}
-
-// AlignLeft easy access alignement choices
-func (f *Field) AlignLeft() {
-	f.SetAlignement(AlignementLeft)
-}
-
-// AlignRight easy access alignement choices
-func (f *Field) AlignRight() {
-	f.SetAlignement(AlignementRight)
-}
-
 // GetName GetName
 func (f *Field) GetName() string {
 	if f == nil {
-		return "field is null"
+		return FieldIsNil
 	}
 	return f.name
 }
@@ -88,9 +60,56 @@ func (f *Field) SetName(name string) {
 	f.name = name
 }
 
-func (f *Field) toString(value interface{}) string {
+// GetAlignment GetAlignment
+func (f *Field) GetAlignment() string {
 	if f == nil {
-		return "field is null"
+		return FieldIsNil
+	}
+	if f.opts == nil {
+		return string(DefaultAlignment)
+	}
+	return string(f.opts.Alignment)
+}
+
+// SetAlignment SetAlignment.
+func (f *Field) SetAlignment(alignment alignment) {
+	if f == nil {
+		fmt.Println(FieldIsNil)
+		return
+	}
+	f.opts.Alignment = alignment
+}
+
+// AlignCenter easy access alignment choices
+func (f *Field) AlignCenter() {
+	f.SetAlignment(AlignmentCenter)
+}
+
+// AlignLeft easy access alignment choices
+func (f *Field) AlignLeft() {
+	f.SetAlignment(AlignmentLeft)
+}
+
+// AlignRight easy access alignment choices
+func (f *Field) AlignRight() {
+	f.SetAlignment(AlignmentRight)
+}
+
+// SetOption set field option.
+func (f *Field) SetOption(opts *Options) {
+	if f == nil {
+		fmt.Println(FieldIsNil)
+		return
+	}
+	if opts.Alignment == "" {
+		opts.Alignment = DefaultAlignment
+	}
+	f.opts = opts
+}
+
+func (f *Field) toString(value interface{}, paddingAmount int) string {
+	if value == nil {
+		value = NilValueString
 	}
 	v := ""
 	if f.opts.Format != "" {
@@ -98,5 +117,6 @@ func (f *Field) toString(value interface{}) string {
 	} else {
 		v = fmt.Sprint(value)
 	}
-	return addExtraPadding(v)
+	v = strings.Replace(v, "\t", "    ", -1)
+	return addExtraPadding(v, paddingAmount)
 }

@@ -17,10 +17,12 @@ func ToTable(i interface{}) (*STable, error) {
 	v := reflect.ValueOf(i)
 	switch t.Kind() {
 	case reflect.Array, reflect.Slice:
+		// check is struct element kind is struct
 		if isElementKindStruct(t) {
 			return structArrayToTable(i)
 		}
 		switch t.Elem().Kind() {
+		//  byte array types
 		case reflect.Uint8:
 			b, ok := i.([]byte)
 			if !ok {

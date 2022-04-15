@@ -7,30 +7,31 @@ import (
 )
 
 // doPadding padding to a value with space size and padding type
-func doPadding(value string, colunSize int, paddingType string) (string, error) {
+func doPadding(value string, columnSize int, alignment alignment) (string, error) {
 	valueLength := len([]rune(value))
-	padding := colunSize - valueLength
+	padding := columnSize - valueLength
 
-	switch paddingType {
-	case AlignementLeft:
+	switch alignment {
+	// nil string is representing no alignment
+	case AlignmentLeft, "":
 		s := value + nSpace(padding)
 		return s, nil
-	case AlignementCenter:
+	case AlignmentCenter:
 		left := int(math.Ceil(float64(padding) / 2.0))
 		s := nSpace(left)
 		s += value
 		s += nSpace(padding - left)
 		return s, nil
-	case AlignementRight:
-		if valueLength > colunSize {
+	case AlignmentRight:
+		if valueLength > columnSize {
 			return value, errors.New("value length is overflowing")
 		}
-		colunSize = padding
-		s := nSpace(colunSize)
+		columnSize = padding
+		s := nSpace(columnSize)
 		s += value
 		return s, nil
 	default:
-		return value, fmt.Errorf("unknown padding '%s'. possible paddings left|center|right", paddingType)
+		return value, fmt.Errorf("unknown padding '%s'. possible paddings left|center|right", alignment)
 	}
 }
 

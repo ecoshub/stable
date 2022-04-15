@@ -1,12 +1,7 @@
 package stable
 
-const (
-	// ExtraPaddingSpaces sxtra space padding start and end of values
-	ExtraPaddingSpaces int = 1
-)
-
-func addExtraPadding(s string) string {
-	return repeat(" ", ExtraPaddingSpaces) + s + repeat(" ", ExtraPaddingSpaces)
+func addExtraPadding(s string, paddingAmount int) string {
+	return repeat(" ", paddingAmount) + s + repeat(" ", paddingAmount)
 }
 
 func repeat(char string, n int) string {
