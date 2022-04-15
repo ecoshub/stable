@@ -101,4 +101,3 @@ anonymous struct array example:
 -   show/hide feature for fields
 -	new option 'char limit'
 -	change field header alignment (left|center|right)
--	GetFieldWithName -> GetFieldByName

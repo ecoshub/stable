@@ -62,7 +62,7 @@ func ExampleSetOption_Field() {
 	table.AddFields("file", "size", "mod")
 
 	// change 'size' fields format option
-	table.GetFieldWithName("size").SetOption(&Options{
+	table.GetFieldByName("size").SetOption(&Options{
 		Format:    "%0.1f (KB)",
 		Alignment: AlignmentCenter,
 	})
@@ -138,7 +138,7 @@ func ExampleToTable_anonymous_struct() {
 	table.SetCaption("docker log file info")
 
 	// lets print 'mod' as octal for more
-	table.GetFieldWithName("mod").SetOption(&Options{
+	table.GetFieldByName("mod").SetOption(&Options{
 		Format: "%o",
 	})
 

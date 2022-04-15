@@ -103,8 +103,8 @@ func (st *STable) GetField(index int) *Field {
 	return nil
 }
 
-// GetFieldWithName GetFieldWithName
-func (st *STable) GetFieldWithName(name string) *Field {
+// GetFieldByName GetFieldByName
+func (st *STable) GetFieldByName(name string) *Field {
 	for _, f := range st.fields {
 		if f.name == name {
 			return f
