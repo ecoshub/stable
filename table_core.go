@@ -1,6 +1,8 @@
 package stable
 
-import "fmt"
+import (
+	"strings"
+)
 
 func (st *STable) String() string {
 	if !st.isThereAnyChanges() {
@@ -8,10 +10,15 @@ func (st *STable) String() string {
 	}
 
 	if len(st.fields) == 0 {
-		return "error. Add fields to table"
+		return "'stable' error. there is no field for this table"
 	}
 
 	st.calculateColumnSizeList()
+
+	if len(st.columSizeList) == 0 {
+		return "'stable' error. nothing to show"
+	}
+
 	generic, topBorder, midBorder, botBorder := createBorders(st.borderStyle, st.columSizeList)
 
 	s := ""
@@ -25,33 +32,62 @@ func (st *STable) String() string {
 	s += h + "\n"
 	s += midBorder + "\n"
 
-	for _, r := range st.rowValues {
-		c := createColumn(st.borderStyle, st.fields, r, st.columSizeList)
-		s += c + "\n"
-	}
+	s += st.createColumns()
+
 	s += botBorder + "\n"
 	st.cache = s
 	st.changed = false
 	return s
 }
 
+func (st *STable) createColumns() string {
+	sep := st.borderStyle.get(borderStyleIndexHorizontal)
+	s := ""
+	for _, r := range st.rowValues {
+		c := 0
+		values := make([]string, 0, len(st.fields))
+		for _, f := range st.fields {
+			if f.IsHidden() {
+				continue
+			}
+			val, _ := doPadding(r[c], st.columSizeList[c], f.opts.Alignment)
+			values = append(values, val)
+			c++
+		}
+		s += sep + strings.Join(values, sep) + sep + "\n"
+	}
+	return s
+}
+
 func (st *STable) calculateColumnSizeList() {
-	st.columSizeList = make([]int, len(st.fields))
-	for i, f := range st.fields {
-		st.columSizeList[i] = len(addExtraPadding(f.name, st.generalPadding))
+	st.columSizeList = make([]int, 0, len(st.fields))
+	for _, f := range st.fields {
+		if f.IsHidden() {
+			continue
+		}
+		columnSize := len(addExtraPadding(f.name, st.generalPadding))
+		st.columSizeList = append(st.columSizeList, columnSize)
+	}
+	if len(st.columSizeList) == 0 {
+		return
 	}
 	st.rowValues = make([][]string, len(st.rows))
 	for i := range st.rows {
 		row := st.rows[i]
-		st.rowValues[i] = make([]string, len(row))
+		st.rowValues[i] = make([]string, 0, len(row))
+		c := 0
 		for j := range row {
 			f := st.GetField(j)
+			if f.IsHidden() {
+				continue
+			}
 			val := row[j]
 			s := f.toString(val, st.generalPadding)
-			if len(s) > st.columSizeList[j] {
-				st.columSizeList[j] = len(s)
+			if len(s) > st.columSizeList[c] {
+				st.columSizeList[c] = len(s)
 			}
-			st.rowValues[i][j] = s
+			st.rowValues[i] = append(st.rowValues[i], s)
+			c++
 		}
 	}
 	// adjust column sizes depending on caption size
@@ -77,42 +113,47 @@ func (st *STable) adjustColumnSizes() {
 
 func (st *STable) createHeader() string {
 	sep := st.borderStyle.get(borderStyleIndexHorizontal)
-	s := sep
-	for i, f := range st.fields {
-		val, err := doPadding(f.GetName(), st.columSizeList[i], AlignmentCenter)
-		if err != nil {
-			fmt.Println(err)
+	c := 0
+	values := make([]string, 0, len(st.fields))
+	for _, f := range st.fields {
+		if f.IsHidden() {
 			continue
 		}
-		s += val
-		if i != len(st.fields)-1 {
-			s += sep
+		val, err := doPadding(f.GetName(), st.columSizeList[c], AlignmentCenter)
+		if err != nil {
+			continue
 		}
+		values = append(values, val)
+		c++
 	}
-	s += sep
+	s := sep + strings.Join(values, sep) + sep
 	return s
 }
 
 func createColumn(bs *BorderStyle, fields []*Field, values []string, columnSizeList []int) string {
 	sep := bs.get(borderStyleIndexHorizontal)
 	s := sep
+	c := 0
 	for i, f := range fields {
+		if f.IsHidden() {
+			continue
+		}
 		var val string
 		var err error
 		if i < len(values) {
 			// NOTE f and f.opts nil check maybe after
-			val, err = doPadding(values[i], columnSizeList[i], f.opts.Alignment)
+			val, err = doPadding(values[c], columnSizeList[c], f.opts.Alignment)
 			if err != nil {
-				fmt.Println(err)
-				val, _ = doPadding("ERR", columnSizeList[i], AlignmentCenter)
+				val, _ = doPadding("<err>", columnSizeList[c], AlignmentCenter)
 			}
 		} else {
-			val, _ = doPadding("", columnSizeList[i], AlignmentCenter)
+			val, _ = doPadding("", columnSizeList[c], AlignmentCenter)
 		}
 		s += val
 		if i != len(fields)-1 {
 			s += sep
 		}
+		c++
 	}
 	s += sep
 	return s

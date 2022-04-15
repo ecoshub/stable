@@ -36,6 +36,9 @@ func doPadding(value string, columnSize int, alignment alignment) (string, error
 }
 
 func nSpace(n int) string {
+	if n < 0 {
+		return ""
+	}
 	s := make([]byte, n)
 	for i := 0; i < n; i++ {
 		s[i] = ' '

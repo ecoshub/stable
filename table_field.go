@@ -24,6 +24,7 @@ type Field struct {
 type Options struct {
 	Format    string
 	Alignment alignment
+	Hide      bool
 }
 
 // creates a new field with name
@@ -110,6 +111,27 @@ func (f *Field) SetOption(opts *Options) {
 	f.opts = opts
 	f.changed = true
 
+}
+
+// IsHidden get visibility of field
+func (f *Field) IsHidden() bool {
+	return f.opts.Hide == true
+}
+
+// ChangeVisibility change visibility of field
+func (f *Field) ChangeVisibility(hide bool) {
+	f.opts.Hide = hide
+	f.changed = true
+}
+
+// Show change visibility of field to 'show'
+func (f *Field) Show() {
+	f.ChangeVisibility(false)
+}
+
+// Hide change visibility of field to 'hide'
+func (f *Field) Hide() {
+	f.ChangeVisibility(true)
 }
 
 func (f *Field) toString(value interface{}, paddingAmount int) string {
