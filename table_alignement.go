@@ -9,6 +9,8 @@ const (
 	AlignmentCenter alignment = "center"
 	// AlignmentRight alignment type right
 	AlignmentRight alignment = "right"
-	// DefaultAlignment default alignment type
-	DefaultAlignment alignment = AlignmentLeft
+	// DefaultValueAlignment default value alignment type
+	DefaultValueAlignment alignment = AlignmentLeft
+	// DefaultHeaderAlignment default header alignment type
+	DefaultHeaderAlignment alignment = AlignmentCenter
 )

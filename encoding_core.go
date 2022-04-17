@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	// ErrNotSupported error not supported table conversion
+	// ErrNotSupported error not supported type for convert to table
 	ErrNotSupported error = errors.New("not supported type")
 )
 

@@ -26,6 +26,29 @@ func ExampleNew() {
 	// |  /var/log/docker  |  12.453  |  511  |
 	// +-------------------+----------+-------+
 }
+func ExampleBasic() {
+	// create a basic table
+	table := Basic("caption of basic table", "brand", "quality", "year", "in_stock")
+
+	// add some rows
+	table.Row("asus", 10, 2016, true)
+	table.Row("apple", 8, 2020, true)
+	table.Row("samsung", 21, 2022, true)
+	table.Row("hp", 51, 2018, false)
+
+	fmt.Println(table)
+	// output:
+	// +---------------------------------------------+
+	// |            caption of basic table           |
+	// |---------------------------------------------|
+	// |   brand   |  quality  |  year  |  in_stock  |
+	// |-----------+-----------+--------+------------|
+	// |  asus     |  10       |  2016  |  true      |
+	// |  apple    |  8        |  2020  |  true      |
+	// |  samsung  |  21       |  2022  |  true      |
+	// |  hp       |  51       |  2018  |  false     |
+	// +-----------+-----------+--------+------------+
+}
 
 func ExampleSetAlignment_Field() {
 	// create a table
@@ -62,7 +85,7 @@ func ExampleSetOption_Field() {
 	table.AddFields("file", "size", "mod")
 
 	// change 'size' fields format option
-	table.GetFieldByName("size").SetOption(&Options{
+	table.GetFieldByName("size").SetOptions(&Options{
 		Format:    "%0.1f (KB)",
 		Alignment: AlignmentCenter,
 	})
@@ -138,7 +161,7 @@ func ExampleToTable_anonymous_struct() {
 	table.SetCaption("docker log file info")
 
 	// lets print 'mod' as octal for more
-	table.GetFieldByName("mod").SetOption(&Options{
+	table.GetFieldByName("mod").SetOptions(&Options{
 		Format: "%o",
 	})
 

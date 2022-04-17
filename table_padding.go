@@ -1,13 +1,11 @@
 package stable
 
 import (
-	"errors"
-	"fmt"
 	"math"
 )
 
 // doPadding padding to a value with space size and padding type
-func doPadding(value string, columnSize int, alignment alignment) (string, error) {
+func doPadding(value string, columnSize int, alignment alignment) string {
 	valueLength := len([]rune(value))
 	padding := columnSize - valueLength
 
@@ -15,24 +13,24 @@ func doPadding(value string, columnSize int, alignment alignment) (string, error
 	// nil string is representing no alignment
 	case AlignmentLeft, "":
 		s := value + nSpace(padding)
-		return s, nil
+		return s
 	case AlignmentCenter:
 		left := int(math.Ceil(float64(padding) / 2.0))
 		s := nSpace(left)
 		s += value
 		s += nSpace(padding - left)
-		return s, nil
+		return s
 	case AlignmentRight:
 		if valueLength > columnSize {
-			return value, errors.New("value length is overflowing")
+			return "err"
 		}
 		columnSize = padding
 		s := nSpace(columnSize)
 		s += value
-		return s, nil
-	default:
-		return value, fmt.Errorf("unknown padding '%s'. possible paddings left|center|right", alignment)
+		return s
 	}
+	return "wrong-alignment"
+
 }
 
 func nSpace(n int) string {

@@ -1,43 +1,62 @@
 package stable
 
 import (
+	"errors"
 	"strings"
 )
 
+var (
+	// ErrNoField no field errors
+	ErrNoField error = errors.New("'stable' error. there is no field on this table")
+
+	// ErrNoRow no row error
+	ErrNoRow error = errors.New("'stable' error. no row to show")
+)
+
 func (st *STable) String() string {
+	// if no changes occurred return the cache
 	if !st.isThereAnyChanges() {
 		return st.cache
 	}
 
 	if len(st.fields) == 0 {
-		return "'stable' error. there is no field for this table"
+		return ErrNoField.Error()
 	}
 
+	// iterate all columns and get the logest ones to determin min column size
 	st.calculateColumnSizeList()
 
+	// if colum size calculation return with zero length
+	// it means there is no row to process
 	if len(st.columSizeList) == 0 {
-		return "'stable' error. nothing to show"
+		return ErrNoRow.Error()
 	}
 
+	// calculate and create generic borders for this table
 	generic, topBorder, midBorder, botBorder := createBorders(st.borderStyle, st.columSizeList)
 
-	s := ""
+	// table string
+	str := ""
+
 	if st.caption != "" {
-		s += createCaptionBar(st.borderStyle, st.caption, generic)
+		// create caption bar
+		str += createCaptionBar(st.borderStyle, st.caption, generic)
 	} else {
-		s += topBorder + "\n"
+		str += topBorder
 	}
+	// create header bar (field names)
+	headerBar := st.createHeader()
+	str += headerBar
 
-	h := st.createHeader()
-	s += h + "\n"
-	s += midBorder + "\n"
+	// create all rows
+	columnBars := st.createColumns()
+	str += midBorder + "\n"
+	str += columnBars
+	str += botBorder
 
-	s += st.createColumns()
-
-	s += botBorder + "\n"
-	st.cache = s
+	st.cache = str
 	st.changed = false
-	return s
+	return str
 }
 
 func (st *STable) createColumns() string {
@@ -50,7 +69,7 @@ func (st *STable) createColumns() string {
 			if f.IsHidden() {
 				continue
 			}
-			val, _ := doPadding(r[c], st.columSizeList[c], f.opts.Alignment)
+			val := doPadding(r[c], st.columSizeList[c], f.opts.Alignment)
 			values = append(values, val)
 			c++
 		}
@@ -119,14 +138,12 @@ func (st *STable) createHeader() string {
 		if f.IsHidden() {
 			continue
 		}
-		val, err := doPadding(f.GetName(), st.columSizeList[c], AlignmentCenter)
-		if err != nil {
-			continue
-		}
+		val := addExtraPadding(f.name, st.generalPadding)
+		val = doPadding(val, st.columSizeList[c], f.opts.HeaderAlignment)
 		values = append(values, val)
 		c++
 	}
-	s := sep + strings.Join(values, sep) + sep
+	s := sep + strings.Join(values, sep) + sep + "\n"
 	return s
 }
 
@@ -139,15 +156,11 @@ func createColumn(bs *BorderStyle, fields []*Field, values []string, columnSizeL
 			continue
 		}
 		var val string
-		var err error
 		if i < len(values) {
 			// NOTE f and f.opts nil check maybe after
-			val, err = doPadding(values[c], columnSizeList[c], f.opts.Alignment)
-			if err != nil {
-				val, _ = doPadding("<err>", columnSizeList[c], AlignmentCenter)
-			}
+			val = doPadding(values[c], columnSizeList[c], f.opts.Alignment)
 		} else {
-			val, _ = doPadding("", columnSizeList[c], AlignmentCenter)
+			val = doPadding("", columnSizeList[c], AlignmentCenter)
 		}
 		s += val
 		if i != len(fields)-1 {
@@ -161,7 +174,7 @@ func createColumn(bs *BorderStyle, fields []*Field, values []string, columnSizeL
 
 func createCaptionBar(bs *BorderStyle, caption string, genericBorder string) string {
 	tot := len(genericBorder) - 2
-	caption, _ = doPadding(caption, tot, AlignmentCenter)
+	caption = doPadding(caption, tot, AlignmentCenter)
 
 	captionTopBorder := styleTheBorder(genericBorder,
 		bs.get(borderStyleIndexTopLeft),

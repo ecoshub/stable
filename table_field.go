@@ -22,14 +22,21 @@ type Field struct {
 
 // Options field options
 type Options struct {
-	Format    string
-	Alignment alignment
-	Hide      bool
+	Format          string
+	Alignment       alignment
+	HeaderAlignment alignment
+	Hide            bool
+	CharLimit       int
+	LimitFromStart  bool
 }
 
 // creates a new field with name
 func newField(name string) *Field {
-	return &Field{name: name, opts: &Options{Alignment: DefaultAlignment}}
+	return &Field{name: name, opts: &Options{
+		Alignment:       DefaultValueAlignment,
+		HeaderAlignment: DefaultHeaderAlignment,
+	},
+	}
 }
 
 // NewFieldWithOptions NewFieldWithOptions
@@ -38,7 +45,8 @@ func NewFieldWithOptions(name string, opts *Options) *Field {
 		return newField(name)
 	}
 	if opts.Alignment == "" {
-		opts.Alignment = DefaultAlignment
+		opts.Alignment = DefaultValueAlignment
+		opts.HeaderAlignment = DefaultHeaderAlignment
 	}
 	return &Field{
 		name: name,
@@ -63,13 +71,23 @@ func (f *Field) SetName(name string) {
 	f.changed = true
 }
 
+// SetHeaderAlignment SetHeaderAlignment.
+func (f *Field) SetHeaderAlignment(alignment alignment) {
+	if f == nil {
+		fmt.Println(FieldIsNil)
+		return
+	}
+	f.opts.HeaderAlignment = alignment
+	f.changed = true
+}
+
 // GetAlignment GetAlignment
 func (f *Field) GetAlignment() string {
 	if f == nil {
 		return FieldIsNil
 	}
 	if f.opts == nil {
-		return string(DefaultAlignment)
+		return string(DefaultValueAlignment)
 	}
 	return string(f.opts.Alignment)
 }
@@ -99,14 +117,17 @@ func (f *Field) AlignRight() {
 	f.SetAlignment(AlignmentRight)
 }
 
-// SetOption set field option.
-func (f *Field) SetOption(opts *Options) {
+// SetOptions set field option.
+func (f *Field) SetOptions(opts *Options) {
 	if f == nil {
 		fmt.Println(FieldIsNil)
 		return
 	}
 	if opts.Alignment == "" {
-		opts.Alignment = DefaultAlignment
+		opts.Alignment = DefaultValueAlignment
+	}
+	if opts.HeaderAlignment == "" {
+		opts.HeaderAlignment = DefaultHeaderAlignment
 	}
 	f.opts = opts
 	f.changed = true
@@ -145,5 +166,15 @@ func (f *Field) toString(value interface{}, paddingAmount int) string {
 		v = fmt.Sprint(value)
 	}
 	v = strings.Replace(v, "\t", "    ", -1)
-	return addExtraPadding(v, paddingAmount)
+	if f.opts.CharLimit > 0 {
+		if f.opts.CharLimit < len(v) {
+			if f.opts.LimitFromStart {
+				v = "..." + v[len(v)-f.opts.CharLimit:]
+			} else {
+				v = v[:f.opts.CharLimit] + "..."
+			}
+		}
+	}
+	v = addExtraPadding(v, paddingAmount)
+	return v
 }
