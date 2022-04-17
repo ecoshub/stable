@@ -95,6 +95,6 @@ func getStyle(name borderStyleName) (*BorderStyle, error) {
 	case BorderStylePrintableLine:
 		return printableLine, nil
 	default:
-		return nil, errors.New("border style not found")
+		return nil, errors.New("'stable' error. border style not found")
 	}
 }

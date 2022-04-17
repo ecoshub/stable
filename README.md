@@ -1,3 +1,6 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/ecoshub/stable)](https://goreportcard.com/report/github.com/ecoshub/stable)
+![License](https://img.shields.io/dub/l/vibe-d.svg) [![GoDoc](https://godoc.org/github.com/ecoshub/stable?status.svg)](https://godoc.org/github.com/ecoshub/stable)
+
 # Welcome to Simple Table (stable)
 
 ## What is 'stable'?
@@ -17,6 +20,10 @@ stable can create ascii table from;
 -	char limiting
 -   customizable border styles
 -	and much more...
+
+## Examples
+
+ There are a lots of examples in **[Godoc](https://godoc.org/github.com/ecoshub/stable)** page and `example_test.go` file.
 
 ## Try your self!
 anonymous struct array example:

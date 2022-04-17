@@ -9,7 +9,7 @@ import (
 
 var (
 	// ErrMalformedCSV malformed csv
-	ErrMalformedCSV error = errors.New("malformed csv")
+	ErrMalformedCSV error = errors.New("'stable' error. malformed csv")
 )
 
 // CSVToTable convert csv encoded string to *STable

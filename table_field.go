@@ -22,12 +22,38 @@ type Field struct {
 
 // Options field options
 type Options struct {
-	Format          string
-	Alignment       alignment
+	// print format of field
+	// standart print format abbreviations are valid
+	// example: (value 12.34)
+	//     Fortmat: "%0.2f (ms)"
+	// output: 12.34 (ms)
+	Format string
+
+	// alignment of value ( AlignmentCLeft | AlignmentCenter | AlignmentRight )
+	// example:
+	//     Alignment: AlignmentCenter
+	Alignment alignment
+
+	// alignment of field header ( AlignmentCLeft | AlignmentCenter | AlignmentRight )
+	// example:
+	//     Alignment: AlignmentRight
 	HeaderAlignment alignment
-	Hide            bool
-	CharLimit       int
-	LimitFromStart  bool
+
+	// hide | show the field
+	Hide bool
+
+	// limit the char output of value
+	// example: (value: "/var/log/sys/crontab.log")
+	//     CharLimit: 12
+	// output: " /var/log/sys..."
+	CharLimit int
+
+	// char limit orientation
+	// example: (value: "/var/log/sys/crontab.log")
+	//     CharLimit: 12
+	//     LimitFromStart: true
+	// output: ".../crontab.log"
+	LimitFromStart bool
 }
 
 // creates a new field with name
@@ -39,7 +65,7 @@ func newField(name string) *Field {
 	}
 }
 
-// NewFieldWithOptions NewFieldWithOptions
+// NewFieldWithOptions create new field with options (alignment, char limit, format etc.)
 func NewFieldWithOptions(name string, opts *Options) *Field {
 	if opts == nil {
 		return newField(name)
@@ -54,7 +80,7 @@ func NewFieldWithOptions(name string, opts *Options) *Field {
 	}
 }
 
-// GetName GetName
+// GetName get fields name
 func (f *Field) GetName() string {
 	if f == nil {
 		return FieldIsNil
@@ -62,7 +88,7 @@ func (f *Field) GetName() string {
 	return f.name
 }
 
-// SetName SetName
+// SetName set field a new name
 func (f *Field) SetName(name string) {
 	if f == nil {
 		return
@@ -81,7 +107,7 @@ func (f *Field) SetHeaderAlignment(alignment alignment) {
 	f.changed = true
 }
 
-// GetAlignment GetAlignment
+// GetAlignment get value alignment ( left | center | right )
 func (f *Field) GetAlignment() string {
 	if f == nil {
 		return FieldIsNil
@@ -92,7 +118,7 @@ func (f *Field) GetAlignment() string {
 	return string(f.opts.Alignment)
 }
 
-// SetAlignment SetAlignment.
+// SetAlignment set a new alignment for field values.
 func (f *Field) SetAlignment(alignment alignment) {
 	if f == nil {
 		fmt.Println(FieldIsNil)
@@ -102,17 +128,17 @@ func (f *Field) SetAlignment(alignment alignment) {
 	f.changed = true
 }
 
-// AlignCenter easy access alignment choices
+// AlignCenter align field values to center
 func (f *Field) AlignCenter() {
 	f.SetAlignment(AlignmentCenter)
 }
 
-// AlignLeft easy access alignment choices
+// AlignLeft align field values to left
 func (f *Field) AlignLeft() {
 	f.SetAlignment(AlignmentLeft)
 }
 
-// AlignRight easy access alignment choices
+// AlignRight align field values to right
 func (f *Field) AlignRight() {
 	f.SetAlignment(AlignmentRight)
 }
@@ -139,7 +165,7 @@ func (f *Field) IsHidden() bool {
 	return f.opts.Hide == true
 }
 
-// ChangeVisibility change visibility of field
+// ChangeVisibility change visibility of field ( hide | show )
 func (f *Field) ChangeVisibility(hide bool) {
 	f.opts.Hide = hide
 	f.changed = true

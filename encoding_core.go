@@ -8,7 +8,7 @@ import (
 
 var (
 	// ErrNotSupported error not supported type for convert to table
-	ErrNotSupported error = errors.New("not supported type")
+	ErrNotSupported error = errors.New("'stable' error. not supported type")
 )
 
 // ToTable coverts other data types to *STable type
