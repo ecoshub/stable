@@ -8,7 +8,7 @@ import (
 
 var (
 	// ErrNullJSON error null json
-	ErrNullJSON error = errors.New("null json")
+	ErrNullJSON error = errors.New("'stable' error. null json")
 )
 
 // jsonSwitch switch for array or object type json

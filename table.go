@@ -36,6 +36,13 @@ func New(caption string) *STable {
 	return st
 }
 
+// AddField adds a field with name
+func (st *STable) AddField(name string) {
+	f := newField(name)
+	st.fields = append(st.fields, f)
+	st.changed = true
+}
+
 // Basic creates basic table with field names
 func Basic(caption string, fieldNames ...string) *STable {
 	st := New(caption)
@@ -45,7 +52,7 @@ func Basic(caption string, fieldNames ...string) *STable {
 	return st
 }
 
-// AddFields adds fields
+// AddFields add new fields with name
 func (st *STable) AddFields(fieldNames ...string) *STable {
 	for _, fn := range fieldNames {
 		st.AddField(fn)
@@ -81,13 +88,6 @@ func (st *STable) Caption() string {
 	return st.caption
 }
 
-// AddField adds a field with name
-func (st *STable) AddField(name string) {
-	f := newField(name)
-	st.fields = append(st.fields, f)
-	st.changed = true
-}
-
 // AddFieldWithOptions adds a field with options
 func (st *STable) AddFieldWithOptions(name string, opts *Options) {
 	f := NewFieldWithOptions(name, opts)
@@ -95,7 +95,7 @@ func (st *STable) AddFieldWithOptions(name string, opts *Options) {
 	st.changed = true
 }
 
-// GetField GetField
+// GetField get field with field index
 func (st *STable) GetField(index int) *Field {
 	if index < len(st.fields) {
 		return st.fields[index]
@@ -103,7 +103,7 @@ func (st *STable) GetField(index int) *Field {
 	return nil
 }
 
-// GetFieldByName GetFieldByName
+// GetFieldByName get field by field name
 func (st *STable) GetFieldByName(name string) *Field {
 	for _, f := range st.fields {
 		if f.name == name {
@@ -113,7 +113,7 @@ func (st *STable) GetFieldByName(name string) *Field {
 	return nil
 }
 
-// Row add row
+// Row add a row
 func (st *STable) Row(values ...interface{}) {
 	if len(values) > len(st.fields) {
 		err := fmt.Errorf("extra value(s) at row '%d'. value(s): %v", len(st.rows)+1, values[len(st.fields):])
@@ -124,7 +124,7 @@ func (st *STable) Row(values ...interface{}) {
 	st.changed = true
 }
 
-// SetStyle set border style default is "printableBorderStyle"
+// SetStyle set border style (BorderStyleDoubleLine | BorderStyleSingleLine | BorderStylePrintableLine)
 func (st *STable) SetStyle(styleName borderStyleName) error {
 	style, err := getStyle(styleName)
 	if err != nil {

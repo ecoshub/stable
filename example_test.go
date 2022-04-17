@@ -137,7 +137,7 @@ func ExampleToTable_struct() {
 	// |  31   |  1.8     |  Ruby Cohen  |  true  |
 	// +-------+----------+--------------+--------+
 }
-func ExampleToTable_anonymous_struct() {
+func ExampleToTable_anonymousStruct() {
 	// lets create an anonymous struct for purpose of example
 	// we can change field tag fith 'table' keyword
 	fileInfo := struct {
@@ -176,7 +176,7 @@ func ExampleToTable_anonymous_struct() {
 	// |  /var/log/system.d/docker.log  |  1.8   |  777  |
 	// +--------------------------------+--------+-------+
 }
-func ExampleToTable_struct_array() {
+func ExampleToTable_structArray() {
 	// example struct
 	type Person struct {
 		Age    int     `table:"age"`
@@ -217,7 +217,7 @@ func ExampleToTable_struct_array() {
 	// |  31   |  1.8     |  Rosa Daniels      |  true   |
 	// +-------+----------+--------------------+---------+
 }
-func ExampleToTable_anonymous_struct_array() {
+func ExampleToTable_anonymousStructArray() {
 	persons := []*struct {
 		Age    int     `table:"age"`
 		Height float64 `table:"height"`
@@ -289,7 +289,7 @@ func ExampleToTable_map() {
 	// |  username    |  ecoshub                               |
 	// +--------------+----------------------------------------+
 }
-func ExampleToTable_map_array() {
+func ExampleToTable_mapArray() {
 	t := time.Date(2022, 01, 17, 0, 0, 0, 0, time.UTC)
 	user := []map[string]interface{}{
 		{
@@ -361,7 +361,7 @@ func ExampleToTable_json() {
 	// |  picture   |  http://placehold.it/32x32             |
 	// +------------+----------------------------------------+
 }
-func ExampleToTable_json_array() {
+func ExampleToTable_jsonArray() {
 	// example byte array ( json encoded )
 	j := []byte(`[{"id": 0,"name": "Heath Vazquez", "age":40, "ssn":"6259d81d221425d39b2b02f5"},{"id": 1,"name": "Blanca Massey", "age":42, "ssn":"6259d8824e829833afacc3c7"},{"id": 2,"name": "Veronica Glass", "age":43, "ssn":"6259d8904d92bf035847e32a"}]`)
 
@@ -389,7 +389,7 @@ func ExampleToTable_json_array() {
 	// +-------+------+------------------+----------------------------+
 }
 
-func ExampleToTable_csv() {
+func ExampleCSVToTable() {
 	c := `id,firstname,lastname,email,email2,profession
 100,Nikki,Haldas,Nikki.Haldas@yopmail.com,Nikki.Haldas@gmail.com,worker
 101,Blinni,Arquit,Blinni.Arquit@yopmail.com,Blinni.Arquit@gmail.com,doctor

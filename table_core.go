@@ -13,6 +13,7 @@ var (
 	ErrNoRow error = errors.New("'stable' error. no row to show")
 )
 
+// String table to string
 func (st *STable) String() string {
 	// if no changes occurred return the cache
 	if !st.isThereAnyChanges() {
