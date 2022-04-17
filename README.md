@@ -13,7 +13,7 @@ stable can create ascii table from;
 ## Functionalities
 -   wide range of type support
 -   value and header orientation options
--   custom print format option for values
+-   custom print format option
 -	char limiting
 -   customizable border styles
 -	and much more...
