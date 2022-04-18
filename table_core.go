@@ -24,6 +24,19 @@ func Print(i interface{}) {
 	fmt.Println(st)
 }
 
+// PrintWithCaption print the given type as table with caption
+func PrintWithCaption(caption string, i interface{}) {
+	st, err := ToTable(i)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	st.SetCaption(caption)
+
+	fmt.Println(st)
+}
+
 // String table to string
 func (st *STable) String() string {
 	// if no changes occurred return the cache

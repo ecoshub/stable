@@ -176,6 +176,65 @@ func ExampleToTable_anonymousStruct() {
 	// |  /var/log/system.d/docker.log  |  1.8   |  777  |
 	// +--------------------------------+--------+-------+
 }
+func ExamplePrint() {
+	// example struct
+	type Person struct {
+		Age    int     `table:"age"`
+		Height float64 `table:"height"`
+		Name   string  `table:"name"`
+		Male   bool    `table:"male"`
+	}
+
+	// lets create a bunch of person
+	persons := []*Person{
+		{Name: "Ruby Cohen", Age: 30, Height: 1.80, Male: true},
+		{Name: "Bethany Parsons", Age: 29, Height: 1.58},
+		{Name: "Ronnie Rodriguez", Age: 28, Height: 1.78, Male: true},
+		{Name: "Rosa Daniels", Age: 31, Height: 1.80, Male: true},
+	}
+
+	Print(persons)
+	// output:
+	// +-------------------------------------------------+
+	// |  age  |  height  |        name        |   male  |
+	// |-------+----------+--------------------+---------|
+	// |  30   |  1.8     |  Ruby Cohen        |  true   |
+	// |  29   |  1.58    |  Bethany Parsons   |  false  |
+	// |  28   |  1.78    |  Ronnie Rodriguez  |  true   |
+	// |  31   |  1.8     |  Rosa Daniels      |  true   |
+	// +-------+----------+--------------------+---------+
+}
+func ExamplePrintWithCaption() {
+	// example struct
+	type Person struct {
+		Age    int     `table:"age"`
+		Height float64 `table:"height"`
+		Name   string  `table:"name"`
+		Male   bool    `table:"male"`
+	}
+
+	// lets create a bunch of person
+	persons := []*Person{
+		{Name: "Ruby Cohen", Age: 30, Height: 1.80, Male: true},
+		{Name: "Bethany Parsons", Age: 29, Height: 1.58},
+		{Name: "Ronnie Rodriguez", Age: 28, Height: 1.78, Male: true},
+		{Name: "Rosa Daniels", Age: 31, Height: 1.80, Male: true},
+	}
+
+	PrintWithCaption("Customers of Coffee Shop", persons)
+	// output:
+	// +-------------------------------------------------+
+	// |             Customers of Coffee Shop            |
+	// |-------------------------------------------------|
+	// |  age  |  height  |        name        |   male  |
+	// |-------+----------+--------------------+---------|
+	// |  30   |  1.8     |  Ruby Cohen        |  true   |
+	// |  29   |  1.58    |  Bethany Parsons   |  false  |
+	// |  28   |  1.78    |  Ronnie Rodriguez  |  true   |
+	// |  31   |  1.8     |  Rosa Daniels      |  true   |
+	// +-------+----------+--------------------+---------+
+}
+
 func ExampleToTable_structArray() {
 	// example struct
 	type Person struct {
