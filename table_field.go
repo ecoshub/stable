@@ -72,6 +72,8 @@ func NewFieldWithOptions(name string, opts *Options) *Field {
 	}
 	if opts.Alignment == "" {
 		opts.Alignment = DefaultValueAlignment
+	}
+	if opts.HeaderAlignment == "" {
 		opts.HeaderAlignment = DefaultHeaderAlignment
 	}
 	return &Field{
