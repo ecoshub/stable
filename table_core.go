@@ -43,7 +43,7 @@ func (st *STable) String() string {
 		// create caption bar
 		str += createCaptionBar(st.borderStyle, st.caption, generic)
 	} else {
-		str += topBorder
+		str += topBorder + "\n"
 	}
 	// create header bar (field names)
 	headerBar := st.createHeader()
