@@ -28,42 +28,43 @@ stable can create ascii table from;
 ## Try your self!
 anonymous struct array example:
 ```go
-persons := []struct {
-	Name   string
-	Age    int
-	Height float64
-	Male   bool
-}{
-	{Name: "Ruby Cohen", Age: 30, Height: 1.80, Male: true},
-	{Name: "Bethany Parsons", Age: 29, Height: 1.58, Male:false},
-	{Name: "Ronnie Rodriguez", Age: 28, Height: 1.78, Male: true},
-	{Name: "Rosa Daniels", Age: 31, Height: 1.80, Male: true},
-}
+	// any struct/struct array
+	persons := []struct {
+		Name      string
+		Age       int
+		Height    float64
+		Available bool
+	}{
+		{Name: "Ruby Cohen", Age: 30, Height: 1.80, Available: true},
+		{Name: "Bethany Parsons", Age: 29, Height: 1.58, Available: false},
+		{Name: "Ronnie Rodriguez", Age: 28, Height: 1.78, Available: true},
+		{Name: "Rosa Daniels", Age: 31, Height: 1.80, Available: true},
+	}
 
-// convert it to table
-t, err := stable.ToTable(persons)
-if err != nil {
-	fmt.Println(err)
-	return
-}
+	// convert it to table
+	t, err := stable.ToTable(persons)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
-// set the table caption
-t.SetCaption("Customers")
+	// set the table caption
+	t.SetCaption("Customers")
 
-// print the table
-fmt.Println(t)
+	// print the table
+	fmt.Println(t)
 
 // output: 
-// +-------------------------------------------------+
-// |                    Customers                    |
-// |-------------------------------------------------|
-// |        Name        |  Age  |  Height  |   Male  |
-// |--------------------+-------+----------+---------|
-// |  Ruby Cohen        |  30   |  1.8     |  true   |
-// |  Bethany Parsons   |  29   |  1.58    |  false  |
-// |  Ronnie Rodriguez  |  28   |  1.78    |  true   |
-// |  Rosa Daniels      |  31   |  1.8     |  true   |
-// +--------------------+-------+----------+---------+
+// +-----------------------------------------------------+
+// |                      Customers                      |
+// |-----------------------------------------------------|
+// |        Name        |  Age  |  Height  |  Available  |
+// |--------------------+-------+----------+-------------|
+// |  Ruby Cohen        |  30   |  1.8     |  true       |
+// |  Bethany Parsons   |  29   |  1.58    |  false      |
+// |  Ronnie Rodriguez  |  28   |  1.78    |  true       |
+// |  Rosa Daniels      |  31   |  1.8     |  true       |
+// +--------------------+-------+----------+-------------+
 ```
 
 ## Create custom tables!
@@ -108,3 +109,7 @@ fmt.Println(table)
 ```
 ## Whats Next?
 -	custom border style
+
+
+## Kudos
+-	[Alican Erdurmaz](https://github.com/alicanerdurmaz) for widening the type support idea
