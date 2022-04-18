@@ -63,13 +63,6 @@ func structToTable(s interface{}) (*STable, error) {
 		value := fieldValues[i]
 		table.Row(key, value)
 	}
-
-	// fieldNames := getFieldNames(v, t)
-	// table.AddFields(fieldNames...)
-
-	// fieldValues := getFieldValues(v, t)
-	// table.Row(fieldValues...)
-
 	return table, nil
 }
 
