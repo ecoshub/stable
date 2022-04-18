@@ -2,6 +2,7 @@ package stable
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -12,6 +13,16 @@ var (
 	// ErrNoRow no row error
 	ErrNoRow error = errors.New("'stable' error. no row to show")
 )
+
+// Print print the given type as table
+func Print(i interface{}) {
+	st, err := ToTable(i)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(st)
+}
 
 // String table to string
 func (st *STable) String() string {

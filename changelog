@@ -1,3 +1,7 @@
 v1.0.0:
     initial release
     readme added
+
+v1.0.1:
+    version constant added into package
+    print(interface{}) function implemented
