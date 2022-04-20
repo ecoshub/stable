@@ -47,22 +47,12 @@ func structToTable(s interface{}) (*STable, error) {
 	caption := t.Name()
 	table := New(caption)
 
-	table.AddFieldWithOptions("key", &Options{
-		HeaderAlignment: AlignmentLeft,
-	})
-
-	table.AddFieldWithOptions("value", &Options{
-		HeaderAlignment: AlignmentLeft,
-	})
-
 	fieldNames := getFieldNames(v, t)
-	fieldValues := getFieldValues(v, t)
+	table.AddFields(fieldNames...)
 
-	for i := range fieldNames {
-		key := fieldNames[i]
-		value := fieldValues[i]
-		table.Row(key, value)
-	}
+	fieldValues := getFieldValues(v, t)
+	table.Row(fieldValues...)
+
 	return table, nil
 }
 
