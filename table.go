@@ -134,3 +134,8 @@ func (st *STable) SetStyle(styleName borderStyleName) error {
 	st.changed = true
 	return nil
 }
+
+// FieldCount get field count of table
+func (st *STable) FieldCount() int {
+	return len(st.fields)
+}
