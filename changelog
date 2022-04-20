@@ -5,3 +5,6 @@ v1.0.0:
 v1.0.1:
     version constant added into package
     print(interface{}) function implemented
+
+v1.0.2:
+    field count method added (.FieldCount)

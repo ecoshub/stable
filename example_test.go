@@ -501,7 +501,7 @@ func ExampleCSVToTable() {
 	// |  1099  |  Cissiee    |  Trey      |  Cissiee.Trey@yopmail.com       |  Cissiee.Trey@gmail.com       |  developer       |
 	// +--------+-------------+------------+---------------------------------+-------------------------------+------------------+
 }
-func ExampleHide_Field() {
+func ExampleField_Hide() {
 	t := time.Date(2022, 01, 17, 0, 0, 0, 0, time.UTC)
 	user := []map[string]interface{}{
 		{
@@ -557,4 +557,25 @@ func ExampleHide_Field() {
 	// |  1642377600000  |  9b03c12b-ca05-4654-927a-56feb23cb8b3  |  ecoshub    |
 	// |  1642377600000  |  981c8036-f017-4b15-920c-4b0c73948cf4  |  jenkins99  |
 	// +-----------------+----------------------------------------+-------------+
+}
+
+func ExampleSTable_FieldCount() {
+	fileInfo := struct {
+		FilePath string  `table:"path"`
+		FileSize float64 `table:"size"`
+		FileMod  int     `table:"mod"`
+	}{
+		FilePath: "/var/log/system.d/docker.log",
+		FileSize: 1.8,
+		FileMod:  0777,
+	}
+
+	// convert struct to table
+	table, err := ToTable(fileInfo)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(table.FieldCount())
+	// output: 3
 }
