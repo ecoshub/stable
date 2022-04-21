@@ -501,7 +501,7 @@ func ExampleCSVToTable() {
 	// |  1099  |  Cissiee    |  Trey      |  Cissiee.Trey@yopmail.com       |  Cissiee.Trey@gmail.com       |  developer       |
 	// +--------+-------------+------------+---------------------------------+-------------------------------+------------------+
 }
-func ExampleHide_Field() {
+func ExampleField_Hide() {
 	t := time.Date(2022, 01, 17, 0, 0, 0, 0, time.UTC)
 	user := []map[string]interface{}{
 		{
