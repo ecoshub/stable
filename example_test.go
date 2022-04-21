@@ -531,14 +531,14 @@ func ExampleField_Hide() {
 	table.SetCaption("user info")
 
 	// print the table
-	fmt.Println(table)
+	fmt.Print(table)
 
 	// lets hie some fields (status, region)
 	table.GetFieldByName("status").Hide()
 	table.GetFieldByName("region").Hide()
 
 	// lets print the table again
-	fmt.Println(table)
+	fmt.Print(table)
 	// output:
 	// +----------------------------------------------------------------------------------------------+
 	// |                                           user info                                          |
@@ -548,7 +548,6 @@ func ExampleField_Hide() {
 	// |  1642377600000  |  9b03c12b-ca05-4654-927a-56feb23cb8b3  |  mena    |  1       |  ecoshub    |
 	// |  1642377600000  |  981c8036-f017-4b15-920c-4b0c73948cf4  |  mena    |  1       |  jenkins99  |
 	// +-----------------+----------------------------------------+----------+----------+-------------+
-
 	// +------------------------------------------------------------------------+
 	// |                                user info                               |
 	// |------------------------------------------------------------------------|
