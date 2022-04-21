@@ -77,18 +77,3 @@ func getFieldValues(v reflect.Value, t reflect.Type) []interface{} {
 	}
 	return fieldValues
 }
-
-func isElementKindStruct(t reflect.Type) bool {
-	te := t.Elem()
-	if te.Kind() == reflect.Ptr {
-		te = te.Elem()
-	}
-	return te.Kind() == reflect.Struct
-}
-
-func isKindStruct(v reflect.Value) bool {
-	if v.Type().Kind() == reflect.Ptr {
-		v = reflect.Indirect(v)
-	}
-	return v.Type().Kind() == reflect.Struct
-}
