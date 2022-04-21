@@ -5,3 +5,9 @@ v1.0.0:
 v1.0.1:
     version constant added into package
     print(interface{}) function implemented
+
+v1.0.2:
+    encoding refactored
+    max padding and max caption length constants are added
+    example 'ExampleField_Hide()' fixed
+    a trailing new line '\n' added to table -> string core function

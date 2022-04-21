@@ -2,5 +2,5 @@ package stable
 
 const (
 	// Version current version
-	Version string = "v1.0.1"
+	Version string = "v1.0.2"
 )
