@@ -32,13 +32,13 @@ const (
 	// BorderStyleSingleLine single stripped border style
 	BorderStyleSingleLine borderStyleName = "style-single-line"
 
-	// BorderStylePrintableLine pritable border style
+	// BorderStylePrintableLine printable border style
 	BorderStylePrintableLine borderStyleName = "style-printable-line"
 )
 
 var (
 
-	// doubleLine predefined border styl
+	// doubleLine predefined border style
 	doubleLine *BorderStyle = &BorderStyle{
 		name: BorderStyleDoubleLine,
 		runes: [25]rune{
@@ -50,7 +50,7 @@ var (
 		},
 	}
 
-	// singleLine predefined border styl
+	// singleLine predefined border style
 	singleLine *BorderStyle = &BorderStyle{
 		name: BorderStyleSingleLine,
 		runes: [25]rune{
@@ -61,7 +61,7 @@ var (
 			'│',
 		},
 	}
-	// printableLine predefined border styl
+	// printableLine predefined border style
 	printableLine *BorderStyle = &BorderStyle{
 		name: BorderStyleSingleLine,
 		runes: [25]rune{
@@ -72,6 +72,9 @@ var (
 			'|',
 		},
 	}
+
+	// DefaultLineStyle default line style
+	DefaultLineStyle *BorderStyle = printableLine
 )
 
 // BorderStyle border style main strcut
