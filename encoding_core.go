@@ -1,50 +1,48 @@
 package stable
 
 import (
-	"encoding/json"
 	"errors"
 	"reflect"
 )
 
 var (
 	// ErrNotSupported error not supported type for convert to table
-	ErrNotSupported error = errors.New("'stable' error. not supported type")
+	ErrNotSupported error = errors.New("stable error. Type not supported")
 )
 
 // ToTable coverts other data types to *STable type
 func ToTable(i interface{}) (*STable, error) {
 	t := reflect.TypeOf(i)
 	v := reflect.ValueOf(i)
+
+	// Indirect/redirect pointer to resolve its underlying type
+	if t.Kind() == reflect.Ptr {
+		v = reflect.Indirect(v)
+		t = v.Type()
+	}
+
 	switch t.Kind() {
 	case reflect.Array, reflect.Slice:
-		// check is struct element kind is struct
-		if isElementKindStruct(t) {
+		t = t.Elem()
+		switch t.Kind() {
+		case reflect.Ptr:
+			if isElementKindStruct(t) {
+				return structArrayToTable(i)
+			}
+		case reflect.Struct:
 			return structArrayToTable(i)
-		}
-		switch t.Elem().Kind() {
-		//  byte array types
 		case reflect.Uint8:
-			b, ok := i.([]byte)
-			if !ok {
-				return nil, ErrNotSupported
+			if isJSONEncoded(i) {
+				return jsonSwitch(i.([]byte))
 			}
-			if !json.Valid(i.([]byte)) {
-				return nil, ErrNotSupported
-			}
-			return jsonSwitch(b)
 		case reflect.Map:
-			tt := t.Elem()
-			if tt.Key().Kind() == reflect.String && tt.Elem().Kind() == reflect.Interface {
+			if isAStringInterfaceMap(t) {
 				return encodeMapArray(i.([]map[string]interface{}))
 			}
 		}
 	case reflect.Map:
-		if t.Key().Kind() == reflect.String && t.Elem().Kind() == reflect.Interface {
+		if isAStringInterfaceMap(t) {
 			return encodeMap(i.(map[string]interface{}))
-		}
-	case reflect.Ptr:
-		if isKindStruct(v) {
-			return structToTable(i)
 		}
 	case reflect.Struct:
 		return structToTable(i)

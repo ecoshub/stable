@@ -23,3 +23,18 @@ func repeat(char string, n int) string {
 	}
 	return s
 }
+
+func processCaption(caption string) string {
+	if len(caption) > MaxCaptionLength {
+		caption = caption[:MaxCaptionLength]
+		caption += "..."
+	}
+	return caption
+}
+
+func processPadding(padding int) int {
+	if padding > MaxGeneralPadding {
+		return MaxGeneralPadding
+	}
+	return padding
+}

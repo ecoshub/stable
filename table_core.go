@@ -78,6 +78,7 @@ func (st *STable) String() string {
 	str += midBorder + "\n"
 	str += columnBars
 	str += botBorder
+	str += "\n"
 
 	st.cache = str
 	st.changed = false

@@ -7,6 +7,13 @@ import (
 const (
 	// DefaultGeneralPadding default general padding of table
 	DefaultGeneralPadding int = 2
+
+	// MaxCaptionLength max caption length
+	// if its greater than this constant it will trim the end with "..."
+	MaxCaptionLength int = 50
+
+	// MaxGeneralPadding maximum general padding
+	MaxGeneralPadding int = 8
 )
 
 // STable simple table main struct
@@ -24,15 +31,24 @@ type STable struct {
 
 // New new table, first param is table caption if given
 func New(caption string) *STable {
-	bs, _ := getStyle(BorderStylePrintableLine)
-	st := &STable{
+	return &STable{
+		caption:        processCaption(caption),
 		fields:         make([]*Field, 0, 8),
 		rows:           make([][]interface{}, 0, 8),
 		rowValues:      make([][]string, 0, 8),
-		borderStyle:    bs,
+		borderStyle:    DefaultLineStyle,
 		generalPadding: DefaultGeneralPadding,
 	}
-	st.SetCaption(caption)
+}
+
+// Basic creates basic table with field names
+func Basic(caption string, fieldNames ...string) *STable {
+	fields := make([]*Field, len(fieldNames))
+	for i := range fields {
+		fields[i] = newField(fieldNames[i])
+	}
+	st := New(caption)
+	st.fields = fields
 	return st
 }
 
@@ -41,15 +57,6 @@ func (st *STable) AddField(name string) {
 	f := newField(name)
 	st.fields = append(st.fields, f)
 	st.changed = true
-}
-
-// Basic creates basic table with field names
-func Basic(caption string, fieldNames ...string) *STable {
-	st := New(caption)
-	for _, fn := range fieldNames {
-		st.AddField(fn)
-	}
-	return st
 }
 
 // AddFields add new fields with name
@@ -61,15 +68,22 @@ func (st *STable) AddFields(fieldNames ...string) *STable {
 	return st
 }
 
+// AddFieldWithOptions adds a field with options
+func (st *STable) AddFieldWithOptions(name string, opts *Options) {
+	f := NewFieldWithOptions(name, opts)
+	st.fields = append(st.fields, f)
+	st.changed = true
+}
+
+// Caption get caption of table
+func (st *STable) Caption() string {
+	return st.caption
+}
+
 // SetCaption set caption for table
 func (st *STable) SetCaption(caption string) {
-	if len(caption) > 50 {
-		caption = caption[:50]
-		caption += "..."
-	}
-	st.caption = caption
+	st.caption = processCaption(caption)
 	st.changed = true
-
 }
 
 // GetGeneralPadding get general table padding
@@ -79,19 +93,7 @@ func (st *STable) GetGeneralPadding() int {
 
 // SetGeneralPadding set general table padding
 func (st *STable) SetGeneralPadding(padding int) {
-	st.generalPadding = padding
-	st.changed = true
-}
-
-// Caption get caption of table
-func (st *STable) Caption() string {
-	return st.caption
-}
-
-// AddFieldWithOptions adds a field with options
-func (st *STable) AddFieldWithOptions(name string, opts *Options) {
-	f := NewFieldWithOptions(name, opts)
-	st.fields = append(st.fields, f)
+	st.generalPadding = processPadding(padding)
 	st.changed = true
 }
 
