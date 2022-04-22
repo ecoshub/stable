@@ -31,9 +31,7 @@ func PrintWithCaption(caption string, i interface{}) {
 		fmt.Println(err)
 		return
 	}
-
 	st.SetCaption(caption)
-
 	fmt.Println(st)
 }
 
@@ -49,16 +47,19 @@ func (st *STable) String() string {
 	}
 
 	// iterate all columns and get the logest ones to determin min column size
-	st.calculateColumnSizeList()
+	columSizeList, rowValues, err := st.calculateColumnSizeList()
+	if err != nil {
+		return err.Error()
+	}
 
 	// if colum size calculation return with zero length
 	// it means there is no row to process
-	if len(st.columSizeList) == 0 {
+	if len(columSizeList) == 0 {
 		return ErrNoRow.Error()
 	}
 
 	// calculate and create generic borders for this table
-	generic, topBorder, midBorder, botBorder := createBorders(st.borderStyle, st.columSizeList)
+	generic, topBorder, midBorder, botBorder := createBorders(st.borderStyle, columSizeList)
 
 	// table string
 	str := ""
@@ -70,11 +71,11 @@ func (st *STable) String() string {
 		str += topBorder + "\n"
 	}
 	// create header bar (field names)
-	headerBar := st.createHeader()
+	headerBar := st.createHeader(columSizeList)
 	str += headerBar
 
 	// create all rows
-	columnBars := st.createColumns()
+	columnBars := st.createColumns(columSizeList, rowValues)
 	str += midBorder + "\n"
 	str += columnBars
 	str += botBorder
@@ -85,17 +86,17 @@ func (st *STable) String() string {
 	return str
 }
 
-func (st *STable) createColumns() string {
-	sep := st.borderStyle.get(borderStyleIndexHorizontal)
+func (st *STable) createColumns(columSizeList []int, rowValues [][]string) string {
+	sep := st.borderStyle.get(_BSIHorizontal)
 	s := ""
-	for _, r := range st.rowValues {
+	for _, r := range rowValues {
 		c := 0
 		values := make([]string, 0, len(st.fields))
 		for _, f := range st.fields {
 			if f.IsHidden() {
 				continue
 			}
-			val := doPadding(r[c], st.columSizeList[c], f.opts.Alignment)
+			val := doPadding(r[c], columSizeList[c], f.opts.Alignment)
 			values = append(values, val)
 			c++
 		}
@@ -104,22 +105,22 @@ func (st *STable) createColumns() string {
 	return s
 }
 
-func (st *STable) calculateColumnSizeList() {
-	st.columSizeList = make([]int, 0, len(st.fields))
+func (st *STable) calculateColumnSizeList() ([]int, [][]string, error) {
+	columSizeList := make([]int, 0, len(st.fields))
 	for _, f := range st.fields {
 		if f.IsHidden() {
 			continue
 		}
 		columnSize := len(addExtraPadding(f.name, st.generalPadding))
-		st.columSizeList = append(st.columSizeList, columnSize)
+		columSizeList = append(columSizeList, columnSize)
 	}
-	if len(st.columSizeList) == 0 {
-		return
+	if len(columSizeList) == 0 {
+		return nil, nil, errors.New("no column defined")
 	}
-	st.rowValues = make([][]string, len(st.rows))
+	rowValues := make([][]string, len(st.rows))
 	for i := range st.rows {
 		row := st.rows[i]
-		st.rowValues[i] = make([]string, 0, len(row))
+		rowValues[i] = make([]string, 0, len(row))
 		c := 0
 		for j := range row {
 			f := st.GetField(j)
@@ -128,36 +129,37 @@ func (st *STable) calculateColumnSizeList() {
 			}
 			val := row[j]
 			s := f.toString(val, st.generalPadding)
-			if len(s) > st.columSizeList[c] {
-				st.columSizeList[c] = len(s)
+			if len(s) > columSizeList[c] {
+				columSizeList[c] = len(s)
 			}
-			st.rowValues[i] = append(st.rowValues[i], s)
+			rowValues[i] = append(rowValues[i], s)
 			c++
 		}
 	}
 	// adjust column sizes depending on caption size
-	st.adjustColumnSizes()
+	st.adjustColumnSizes(columSizeList)
+	return columSizeList, rowValues, nil
 }
 
-func (st *STable) adjustColumnSizes() {
+func (st *STable) adjustColumnSizes(columSizeList []int) {
 	captionLength := len(addExtraPadding(st.caption, st.generalPadding)) + 2
 	tot := 0
-	for i := range st.columSizeList {
-		tot += st.columSizeList[i]
+	for i := range columSizeList {
+		tot += columSizeList[i]
 	}
 	if tot < captionLength {
 		diff := captionLength - tot
 		for diff > 0 {
-			for i := range st.columSizeList {
-				st.columSizeList[i]++
+			for i := range columSizeList {
+				columSizeList[i]++
 				diff--
 			}
 		}
 	}
 }
 
-func (st *STable) createHeader() string {
-	sep := st.borderStyle.get(borderStyleIndexHorizontal)
+func (st *STable) createHeader(columSizeList []int) string {
+	sep := st.borderStyle.get(_BSIHorizontal)
 	c := 0
 	values := make([]string, 0, len(st.fields))
 	for _, f := range st.fields {
@@ -165,7 +167,7 @@ func (st *STable) createHeader() string {
 			continue
 		}
 		val := addExtraPadding(f.name, st.generalPadding)
-		val = doPadding(val, st.columSizeList[c], f.opts.HeaderAlignment)
+		val = doPadding(val, columSizeList[c], f.opts.HeaderAlignment)
 		values = append(values, val)
 		c++
 	}
@@ -174,7 +176,7 @@ func (st *STable) createHeader() string {
 }
 
 func createColumn(bs *BorderStyle, fields []*Field, values []string, columnSizeList []int) string {
-	sep := bs.get(borderStyleIndexHorizontal)
+	sep := bs.get(_BSIHorizontal)
 	s := sep
 	c := 0
 	for i, f := range fields {
@@ -203,18 +205,20 @@ func createCaptionBar(bs *BorderStyle, caption string, genericBorder string) str
 	caption = doPadding(caption, tot, AlignmentCenter)
 
 	captionTopBorder := styleTheBorder(genericBorder,
-		bs.get(borderStyleIndexTopLeft),
-		bs.get(borderStyleIndexVertical),
-		bs.get(borderStyleIndexTopRight),
-		bs.get(borderStyleIndexVertical),
+		bs.get(_BSITopLeft),
+		bs.get(_BSIVertical),
+		bs.get(_BSITopRight),
+		bs.get(_BSIVertical),
 	)
+
 	captionMiddleBorder := styleTheBorder(genericBorder,
-		bs.get(borderStyleIndexMidLeft),
-		bs.get(borderStyleIndexTopCenter),
-		bs.get(borderStyleIndexMidRight),
-		bs.get(borderStyleIndexVertical),
+		bs.get(_BSIMidLeft),
+		bs.get(_BSITopCenter),
+		bs.get(_BSIMidRight),
+		bs.get(_BSIVertical),
 	)
-	hor := bs.get(borderStyleIndexHorizontal)
+
+	hor := bs.get(_BSIHorizontal)
 	s := ""
 	s += captionTopBorder + "\n"
 	s += hor + caption + hor + "\n"

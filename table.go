@@ -21,8 +21,6 @@ type STable struct {
 	caption        string
 	fields         []*Field
 	rows           [][]interface{}
-	rowValues      [][]string
-	columSizeList  []int
 	borderStyle    *BorderStyle
 	generalPadding int
 	changed        bool
@@ -35,7 +33,6 @@ func New(caption string) *STable {
 		caption:        processCaption(caption),
 		fields:         make([]*Field, 0, 8),
 		rows:           make([][]interface{}, 0, 8),
-		rowValues:      make([][]string, 0, 8),
 		borderStyle:    DefaultLineStyle,
 		generalPadding: DefaultGeneralPadding,
 	}
