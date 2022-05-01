@@ -12,3 +12,6 @@ v1.0.2:
     example 'ExampleField_Hide()' fixed
     a trailing new line '\n' added to table -> string core function
 
+v1.0.3:
+    new scheme feature added
+
