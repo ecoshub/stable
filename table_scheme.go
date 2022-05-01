@@ -10,6 +10,7 @@ type Scheme struct {
 	FieldOptions    map[string]*Options
 }
 
+
 // InjectScheme inject a scheme to input to create a table with scheme
 func InjectScheme(sc *Scheme, i interface{}) (*STable, error) {
 	t, err := ToTable(i)
