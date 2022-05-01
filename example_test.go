@@ -354,14 +354,14 @@ func ExampleToTable_mapArray() {
 		{
 			"username":   "ecoshub",
 			"password":   "9b03c12b-ca05-4654-927a-56feb23cb8b3",
-			"last_login": t.UnixMilli(),
+			"last_login": t.UnixNano(),
 			"region":     "mena",
 			"status":     1,
 		},
 		{
 			"username":   "jenkins99",
 			"password":   "981c8036-f017-4b15-920c-4b0c73948cf4",
-			"last_login": t.UnixMilli(),
+			"last_login": t.UnixNano(),
 			"region":     "mena",
 			"status":     1,
 		},
@@ -507,14 +507,14 @@ func ExampleField_Hide() {
 		{
 			"username":   "ecoshub",
 			"password":   "9b03c12b-ca05-4654-927a-56feb23cb8b3",
-			"last_login": t.UnixMilli(),
+			"last_login": t.UnixNano(),
 			"region":     "mena",
 			"status":     1,
 		},
 		{
 			"username":   "jenkins99",
 			"password":   "981c8036-f017-4b15-920c-4b0c73948cf4",
-			"last_login": t.UnixMilli(),
+			"last_login": t.UnixNano(),
 			"region":     "mena",
 			"status":     1,
 		},
