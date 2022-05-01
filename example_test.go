@@ -578,3 +578,97 @@ func ExampleSTable_FieldCount() {
 	fmt.Println(table.FieldCount())
 	// output: 3
 }
+
+func ExampleInjectScheme() {
+	// example struct
+	type Person struct {
+		Age    int     `table:"age"`
+		Height float64 `table:"height"`
+		Name   string  `table:"name"`
+		Male   bool    `table:"male"`
+	}
+
+	// lets create a person named 'ruby'
+	ruby := &Person{
+		Name:   "Ruby Cohen",
+		Age:    31,
+		Height: 1.853,
+		Male:   true,
+	}
+
+	sc := &Scheme{
+		Caption:        "Ruby Cohen Personal Info",
+		GeneralPadding: 2,
+		FieldOptions: map[string]*Options{
+			"male":   {Hide: true},
+			"height": {Format: "%0.2f m"},
+		},
+	}
+
+	t, err := InjectScheme(sc, ruby)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(t)
+	// output:
+	// +---------------------------------+
+	// |     Ruby Cohen Personal Info    |
+	// |---------------------------------|
+	// |  age  |  height  |     name     |
+	// |-------+----------+--------------|
+	// |  31   |  1.85 m  |  Ruby Cohen  |
+	// +-------+----------+--------------+
+}
+
+func ExamplePrintWithScheme() {
+	// example struct
+	type Person struct {
+		Age    int     `table:"age"`
+		Height float64 `table:"height"`
+		Name   string  `table:"name"`
+		Male   bool    `table:"male"`
+	}
+
+	// lets create a person named 'ruby'
+	ruby := &Person{
+		Name:   "Ruby Cohen",
+		Age:    31,
+		Height: 1.853,
+		Male:   true,
+	}
+
+	sc := &Scheme{
+		Caption:        "Ruby Cohen Personal Info",
+		GeneralPadding: 2,
+		FieldOptions: map[string]*Options{
+			"male":   {Hide: true},
+			"height": {Format: "%0.2f m"},
+		},
+	}
+	// print the ruby's info
+	PrintWithScheme(sc, ruby)
+
+	// if anything change
+	ruby.Age = 32
+
+	// we can print with same scheme
+	PrintWithScheme(sc, ruby)
+
+	// output:
+	// +---------------------------------+
+	// |     Ruby Cohen Personal Info    |
+	// |---------------------------------|
+	// |  age  |  height  |     name     |
+	// |-------+----------+--------------|
+	// |  31   |  1.85 m  |  Ruby Cohen  |
+	// +-------+----------+--------------+
+	//
+	// +---------------------------------+
+	// |     Ruby Cohen Personal Info    |
+	// |---------------------------------|
+	// |  age  |  height  |     name     |
+	// |-------+----------+--------------|
+	// |  32   |  1.85 m  |  Ruby Cohen  |
+	// +-------+----------+--------------+
+}
