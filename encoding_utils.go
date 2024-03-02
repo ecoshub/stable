@@ -1,20 +1,8 @@
 package stable
 
 import (
-	"encoding/json"
 	"reflect"
 )
-
-func isJSONEncoded(i interface{}) bool {
-	_, ok := i.([]byte)
-	if !ok {
-		return false
-	}
-	if !json.Valid(i.([]byte)) {
-		return false
-	}
-	return true
-}
 
 func isAStringInterfaceMap(t reflect.Type) bool {
 	return t.Key().Kind() == reflect.String && t.Elem().Kind() == reflect.Interface

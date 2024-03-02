@@ -1,6 +1,7 @@
 package stable
 
 import (
+	"encoding/json"
 	"errors"
 	"reflect"
 )
@@ -32,13 +33,19 @@ func ToTable(i interface{}) (*STable, error) {
 		case reflect.Struct:
 			return structArrayToTable(i)
 		case reflect.Uint8:
-			if isJSONEncoded(i) {
-				return jsonSwitch(i.([]byte))
+			data := i.([]byte)
+			if json.Valid(data) {
+				return jsonSwitch(data)
 			}
 		case reflect.Map:
 			if isAStringInterfaceMap(t) {
 				return encodeMapArray(i.([]map[string]interface{}))
 			}
+		}
+	case reflect.String:
+		data := []byte(i.(string))
+		if json.Valid(data) {
+			return jsonSwitch(data)
 		}
 	case reflect.Map:
 		if isAStringInterfaceMap(t) {
