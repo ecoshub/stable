@@ -12,14 +12,14 @@ var (
 )
 
 // jsonSwitch switch for array or object type json
-func jsonSwitch(j []byte) (*STable, error) {
-	if len(j) == 0 {
+func jsonSwitch(data []byte) (*STable, error) {
+	if len(data) == 0 {
 		return nil, ErrNullJSON
 	}
-	if j[0] == '[' {
-		return encodeJSONArray(j)
+	if data[0] == '[' {
+		return encodeJSONArray(data)
 	}
-	return encodeJSON(j)
+	return encodeJSON(data)
 }
 
 func encodeJSON(j []byte) (*STable, error) {
