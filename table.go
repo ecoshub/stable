@@ -25,6 +25,7 @@ type STable struct {
 	generalPadding int
 	changed        bool
 	cache          string
+	showSummary    bool
 }
 
 // New new table, first param is table caption if given
@@ -35,6 +36,7 @@ func New(caption string) *STable {
 		rows:           make([][]interface{}, 0, 8),
 		borderStyle:    DefaultLineStyle,
 		generalPadding: DefaultGeneralPadding,
+		showSummary:    true,
 	}
 }
 
@@ -137,4 +139,102 @@ func (st *STable) SetStyle(styleName borderStyleName) error {
 // FieldCount get field count of table
 func (st *STable) FieldCount() int {
 	return len(st.fields)
+}
+
+// SetShowSummary enables or disables the summary bar
+func (st *STable) SetShowSummary(show bool) {
+	st.showSummary = show
+	st.changed = true
+}
+
+// calculateSummary calculates the summary value for a field based on its configuration
+func (st *STable) calculateSummary(field *Field) interface{} {
+	if field == nil || field.opts == nil || field.opts.Summary == nil {
+		return nil
+	}
+
+	var values []float64
+	for _, row := range st.rows {
+		for i, f := range st.fields {
+			if f == field {
+				val := row[i]
+				switch v := val.(type) {
+				case float64:
+					values = append(values, v)
+				case int:
+					values = append(values, float64(v))
+				case int32:
+					values = append(values, float64(v))
+				case int64:
+					values = append(values, float64(v))
+				case float32:
+					values = append(values, float64(v))
+				}
+				break
+			}
+		}
+	}
+
+	if len(values) == 0 {
+		return nil
+	}
+
+	switch field.opts.Summary.Type {
+	case SummarySum:
+		sum := 0.0
+		for _, v := range values {
+			sum += v
+		}
+		return sum
+	case SummaryAvg:
+		sum := 0.0
+		for _, v := range values {
+			sum += v
+		}
+		return sum / float64(len(values))
+	case SummaryMin:
+		min := values[0]
+		for _, v := range values[1:] {
+			if v < min {
+				min = v
+			}
+		}
+		return min
+	case SummaryMax:
+		max := values[0]
+		for _, v := range values[1:] {
+			if v > max {
+				max = v
+			}
+		}
+		return max
+	default:
+		return nil
+	}
+}
+
+// getSummaryRow returns a row containing summary values for fields with summary configuration
+func (t *STable) getSummaryRow() []interface{} {
+	if !t.showSummary {
+		return nil
+	}
+
+	summaryRow := make([]interface{}, len(t.fields))
+	for i, field := range t.fields {
+		if field.opts != nil && field.opts.Summary != nil {
+			summary := t.calculateSummary(field)
+			if summary != nil {
+				if field.opts.Summary.Format != "" {
+					summaryRow[i] = fmt.Sprintf(field.opts.Summary.Format, summary)
+				} else {
+					summaryRow[i] = summary
+				}
+			} else {
+				summaryRow[i] = "-"
+			}
+		} else {
+			summaryRow[i] = "-"
+		}
+	}
+	return summaryRow
 }

@@ -56,7 +56,7 @@ func structToTable(s interface{}) (*STable, error) {
 	return table, nil
 }
 
-func getFieldNames(v reflect.Value, t reflect.Type) []string {
+func getFieldNames(_ reflect.Value, t reflect.Type) []string {
 	fieldNames := make([]string, t.NumField())
 	for i := 0; i < t.NumField(); i++ {
 		fieldType := t.Field(i)

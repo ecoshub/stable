@@ -1,3 +1,5 @@
+// Package stable provides functionality for creating ASCII tables from various data sources
+// including structs, arrays, JSON, maps, and CSV data.
 package stable
 
 import (
@@ -5,84 +7,99 @@ import (
 	"strings"
 )
 
-const (
-	// NilValueString if a value is nil prints this
-	NilValueString string = "-"
-	// FieldIsNil if field pointer is nil return this line
-	FieldIsNil string = "field is nil."
-)
-
-// Field object
-// every field object is a column
+// Field represents a column in the table with its properties and formatting options.
+// Each field has a name, width, and various formatting options that control how
+// its values are displayed.
 type Field struct {
 	name    string
 	opts    *Options
 	changed bool
 }
 
-// Options field options
+// Options defines the formatting and display options for a field.
 type Options struct {
-	// print format of field
-	// standart print format abbreviations are valid
-	// example: (value 12.34)
-	//     Fortmat: "%0.2f (ms)"
-	// output: 12.34 (ms)
+	// Format specifies the printf-style format string for value formatting.
+	// Example: For value 12.34 with Format "%0.2f (ms)", output will be "12.34 (ms)"
 	Format string
 
-	// alignment of value ( AlignmentCLeft | AlignmentCenter | AlignmentRight )
-	// example:
-	//     Alignment: AlignmentCenter
+	// Alignment controls the horizontal alignment of field values
+	// (AlignmentLeft | AlignmentCenter | AlignmentRight)
 	Alignment alignment
 
-	// alignment of field header ( AlignmentCLeft | AlignmentCenter | AlignmentRight )
-	// example:
-	//     Alignment: AlignmentRight
+	// HeaderAlignment controls the horizontal alignment of the field header
+	// (AlignmentLeft | AlignmentCenter | AlignmentRight)
 	HeaderAlignment alignment
 
-	// hide | show the field
+	// Hide determines whether the field should be hidden from display
 	Hide bool
 
-	// limit the char output of value
-	// example: (value: "/var/log/sys/crontab.log")
-	//     CharLimit: 12
-	// output: " /var/log/sys..."
+	// CharLimit specifies the maximum number of characters to display.
+	// If set to 0, no limit is applied.
 	CharLimit int
 
-	// char limit orientation
-	// example: (value: "/var/log/sys/crontab.log")
-	//     CharLimit: 12
-	//     LimitFromStart: true
-	// output: ".../crontab.log"
+	// LimitFromStart determines whether to truncate from the start or end
+	// when CharLimit is exceeded. If true, truncates from start (shows end),
+	// if false, truncates from end (shows start).
 	LimitFromStart bool
+
+	// Summary configures summary calculations for the field
+	Summary *SummaryOptions
 }
 
-// creates a new field with name
+// SummaryOptions defines the configuration for field summary calculations.
+type SummaryOptions struct {
+	Type   string  // Type of summary (sum, avg, min, max)
+	Format string  // Format string for displaying the summary value
+	Value  float64 // Calculated summary value
+}
+
+const (
+	// NilValueString is displayed when a field value is nil
+	NilValueString = "-"
+
+	// FieldIsNil is returned when a field pointer is nil
+	FieldIsNil = "field is nil."
+
+	// Summary types
+	SummarySum = "sum"
+	SummaryAvg = "avg"
+	SummaryMin = "min"
+	SummaryMax = "max"
+)
+
+// newField creates a new field with the given name and default options.
 func newField(name string) *Field {
-	return &Field{name: name, opts: &Options{
-		Alignment:       DefaultValueAlignment,
-		HeaderAlignment: DefaultHeaderAlignment,
-	},
+	return &Field{
+		name: name,
+		opts: &Options{
+			Alignment:       DefaultValueAlignment,
+			HeaderAlignment: DefaultHeaderAlignment,
+		},
 	}
 }
 
-// NewFieldWithOptions create new field with options (alignment, char limit, format etc.)
+// NewFieldWithOptions creates a new field with the given name and options.
+// If opts is nil, default options will be used.
 func NewFieldWithOptions(name string, opts *Options) *Field {
 	if opts == nil {
 		return newField(name)
 	}
+
+	// Ensure alignment options are set
 	if opts.Alignment == "" {
 		opts.Alignment = DefaultValueAlignment
 	}
 	if opts.HeaderAlignment == "" {
 		opts.HeaderAlignment = DefaultHeaderAlignment
 	}
+
 	return &Field{
 		name: name,
 		opts: opts,
 	}
 }
 
-// GetName get fields name
+// GetName returns the field's name. Returns FieldIsNil if the field is nil.
 func (f *Field) GetName() string {
 	if f == nil {
 		return FieldIsNil
@@ -90,7 +107,8 @@ func (f *Field) GetName() string {
 	return f.name
 }
 
-// SetName set field a new name
+// SetName sets a new name for the field.
+// No-op if the field is nil.
 func (f *Field) SetName(name string) {
 	if f == nil {
 		return
@@ -99,7 +117,8 @@ func (f *Field) SetName(name string) {
 	f.changed = true
 }
 
-// SetHeaderAlignment SetHeaderAlignment.
+// SetHeaderAlignment sets the alignment for the field's header.
+// Prints FieldIsNil and returns if the field is nil.
 func (f *Field) SetHeaderAlignment(alignment alignment) {
 	if f == nil {
 		fmt.Println(FieldIsNil)
@@ -109,7 +128,8 @@ func (f *Field) SetHeaderAlignment(alignment alignment) {
 	f.changed = true
 }
 
-// GetAlignment get value alignment ( left | center | right )
+// GetAlignment returns the field's value alignment as a string.
+// Returns FieldIsNil if the field is nil.
 func (f *Field) GetAlignment() string {
 	if f == nil {
 		return FieldIsNil
@@ -120,7 +140,8 @@ func (f *Field) GetAlignment() string {
 	return string(f.opts.Alignment)
 }
 
-// SetAlignment set a new alignment for field values.
+// SetAlignment sets the alignment for the field's values.
+// Prints FieldIsNil and returns if the field is nil.
 func (f *Field) SetAlignment(alignment alignment) {
 	if f == nil {
 		fmt.Println(FieldIsNil)
@@ -130,79 +151,111 @@ func (f *Field) SetAlignment(alignment alignment) {
 	f.changed = true
 }
 
-// AlignCenter align field values to center
+// AlignCenter sets the field's value alignment to center.
 func (f *Field) AlignCenter() {
 	f.SetAlignment(AlignmentCenter)
 }
 
-// AlignLeft align field values to left
+// AlignLeft sets the field's value alignment to left.
 func (f *Field) AlignLeft() {
 	f.SetAlignment(AlignmentLeft)
 }
 
-// AlignRight align field values to right
+// AlignRight sets the field's value alignment to right.
 func (f *Field) AlignRight() {
 	f.SetAlignment(AlignmentRight)
 }
 
-// SetOptions set field option.
+// SetOptions sets all options for the field.
+// Prints FieldIsNil and returns if the field is nil.
 func (f *Field) SetOptions(opts *Options) {
 	if f == nil {
 		fmt.Println(FieldIsNil)
 		return
 	}
+
+	// Ensure alignment options are set
 	if opts.Alignment == "" {
 		opts.Alignment = DefaultValueAlignment
 	}
 	if opts.HeaderAlignment == "" {
 		opts.HeaderAlignment = DefaultHeaderAlignment
 	}
+
 	f.opts = opts
 	f.changed = true
-
 }
 
-// IsHidden get visibility of field
+// IsHidden returns whether the field is hidden.
 func (f *Field) IsHidden() bool {
-	return f.opts.Hide == true
+	return f != nil && f.opts != nil && f.opts.Hide
 }
 
-// ChangeVisibility change visibility of field ( hide | show )
+// ChangeVisibility changes the visibility of the field.
+// No-op if the field is nil.
 func (f *Field) ChangeVisibility(hide bool) {
+	if f == nil || f.opts == nil {
+		return
+	}
 	f.opts.Hide = hide
 	f.changed = true
 }
 
-// Show change visibility of field to 'show'
+// Show makes the field visible.
 func (f *Field) Show() {
 	f.ChangeVisibility(false)
 }
 
-// Hide change visibility of field to 'hide'
+// Hide makes the field hidden.
 func (f *Field) Hide() {
 	f.ChangeVisibility(true)
 }
 
+// toString formats a value according to the field's options and adds padding.
 func (f *Field) toString(value interface{}, paddingAmount int) string {
 	if value == nil {
 		value = NilValueString
 	}
-	v := ""
-	if f.opts.Format != "" {
+
+	var v string
+	if f.opts != nil && f.opts.Format != "" {
 		v = fmt.Sprintf(f.opts.Format, value)
 	} else {
 		v = fmt.Sprint(value)
 	}
-	v = strings.Replace(v, "\t", "    ", -1)
-	if f.opts.CharLimit > 0 {
-		if f.opts.CharLimit < len(v) {
-			if f.opts.LimitFromStart {
-				v = "..." + v[len(v)-f.opts.CharLimit:]
-			} else {
-				v = v[:f.opts.CharLimit] + "..."
-			}
+
+	// Replace tabs with spaces
+	v = strings.ReplaceAll(v, "\t", "    ")
+
+	// Apply character limit if set
+	if f.opts != nil && f.opts.CharLimit > 0 && f.opts.CharLimit < len(v) {
+		if f.opts.LimitFromStart {
+			v = "..." + v[len(v)-f.opts.CharLimit:]
+		} else {
+			v = v[:f.opts.CharLimit] + "..."
 		}
 	}
-	v = addExtraPadding(v, paddingAmount)
-	return v
+
+	return addExtraPadding(v, paddingAmount)
+}
+
+// SetSummary sets the summary configuration for the field.
+// No-op if the field is nil.
+func (f *Field) SetSummary(summaryType string, format string) {
+	if f == nil {
+		return
+	}
+	if f.opts == nil {
+		f.opts = &Options{}
+	}
+	f.opts.Summary = &SummaryOptions{
+		Type:   summaryType,
+		Format: format,
+	}
+	f.changed = true
+}
+
+// HasSummary returns whether the field has a summary configured.
+func (f *Field) HasSummary() bool {
+	return f != nil && f.opts != nil && f.opts.Summary != nil
 }

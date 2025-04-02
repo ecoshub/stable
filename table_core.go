@@ -47,19 +47,19 @@ func (st *STable) String() string {
 	}
 
 	// iterate all columns and get the logest ones to determin min column size
-	columSizeList, rowValues, err := st.calculateColumnSizeList()
+	columnSizeList, rowValues, err := st.calculateColumnSizeList()
 	if err != nil {
 		return err.Error()
 	}
 
 	// if colum size calculation return with zero length
 	// it means there is no row to process
-	if len(columSizeList) == 0 {
+	if len(columnSizeList) == 0 {
 		return ErrNoRow.Error()
 	}
 
 	// calculate and create generic borders for this table
-	generic, topBorder, midBorder, botBorder := createBorders(st.borderStyle, columSizeList)
+	generic, topBorder, midBorder, botBorder := createBorders(st.borderStyle, columnSizeList)
 
 	// table string
 	str := ""
@@ -71,13 +71,44 @@ func (st *STable) String() string {
 		str += topBorder + "\n"
 	}
 	// create header bar (field names)
-	headerBar := st.createHeader(columSizeList)
+	headerBar := st.createHeader(columnSizeList)
 	str += headerBar
 
 	// create all rows
-	columnBars := st.createColumns(columSizeList, rowValues)
+	columnBars := st.createColumns(columnSizeList, rowValues)
 	str += midBorder + "\n"
 	str += columnBars
+
+	// Check if any field has a summary configured
+	hasSummary := false
+	for _, field := range st.fields {
+		if field.HasSummary() {
+			hasSummary = true
+			break
+		}
+	}
+
+	// add summary row if enabled and there are fields with summary configuration
+	if st.showSummary && hasSummary {
+		summaryRow := st.getSummaryRow()
+		if summaryRow != nil {
+			str += midBorder + "\n"
+			summaryValues := make([]string, 0, len(summaryRow))
+			c := 0
+			for i, val := range summaryRow {
+				if st.fields[i].IsHidden() {
+					continue
+				}
+				s := st.fields[i].toString(val, st.generalPadding)
+				s = doPadding(s, columnSizeList[c], st.fields[i].opts.Alignment)
+				summaryValues = append(summaryValues, s)
+				c++
+			}
+			sep := st.borderStyle.get(_BSIHorizontal)
+			str += sep + strings.Join(summaryValues, sep) + sep + "\n"
+		}
+	}
+
 	str += botBorder
 	str += "\n"
 
@@ -86,19 +117,19 @@ func (st *STable) String() string {
 	return str
 }
 
-func (st *STable) createColumns(columSizeList []int, rowValues [][]string) string {
+func (st *STable) createColumns(columnSizeList []int, rowValues [][]string) string {
 	sep := st.borderStyle.get(_BSIHorizontal)
 	s := ""
 	for _, r := range rowValues {
-		c := 0
 		values := make([]string, 0, len(st.fields))
-		for _, f := range st.fields {
+		visibleIndex := 0
+		for i, f := range st.fields {
 			if f.IsHidden() {
 				continue
 			}
-			val := doPadding(r[c], columSizeList[c], f.opts.Alignment)
+			val := doPadding(r[i], columnSizeList[visibleIndex], f.opts.Alignment)
 			values = append(values, val)
-			c++
+			visibleIndex++
 		}
 		s += sep + strings.Join(values, sep) + sep + "\n"
 	}
@@ -106,22 +137,22 @@ func (st *STable) createColumns(columSizeList []int, rowValues [][]string) strin
 }
 
 func (st *STable) calculateColumnSizeList() ([]int, [][]string, error) {
-	columSizeList := make([]int, 0, len(st.fields))
+	columnSizeList := make([]int, 0, len(st.fields))
 	for _, f := range st.fields {
 		if f.IsHidden() {
 			continue
 		}
 		columnSize := len(addExtraPadding(f.name, st.generalPadding))
-		columSizeList = append(columSizeList, columnSize)
+		columnSizeList = append(columnSizeList, columnSize)
 	}
-	if len(columSizeList) == 0 {
+	if len(columnSizeList) == 0 {
 		return nil, nil, errors.New("no column defined")
 	}
 	rowValues := make([][]string, len(st.rows))
 	for i := range st.rows {
 		row := st.rows[i]
-		rowValues[i] = make([]string, 0, len(row))
-		c := 0
+		rowValues[i] = make([]string, len(row)) // Initialize with full length
+		visibleIndex := 0
 		for j := range row {
 			f := st.GetField(j)
 			if f.IsHidden() {
@@ -129,36 +160,55 @@ func (st *STable) calculateColumnSizeList() ([]int, [][]string, error) {
 			}
 			val := row[j]
 			s := f.toString(val, st.generalPadding)
-			if len(s) > columSizeList[c] {
-				columSizeList[c] = len(s)
+			if len(s) > columnSizeList[visibleIndex] {
+				columnSizeList[visibleIndex] = len(s)
 			}
-			rowValues[i] = append(rowValues[i], s)
-			c++
+			rowValues[i][j] = s // Store at original index
+			visibleIndex++
 		}
 	}
+
+	// Consider summary values in column size calculation
+	if st.showSummary {
+		summaryRow := st.getSummaryRow()
+		if summaryRow != nil {
+			visibleIndex := 0
+			for i, val := range summaryRow {
+				if st.fields[i].IsHidden() {
+					continue
+				}
+				s := st.fields[i].toString(val, st.generalPadding)
+				if len(s) > columnSizeList[visibleIndex] {
+					columnSizeList[visibleIndex] = len(s)
+				}
+				visibleIndex++
+			}
+		}
+	}
+
 	// adjust column sizes depending on caption size
-	st.adjustColumnSizes(columSizeList)
-	return columSizeList, rowValues, nil
+	st.adjustColumnSizes(columnSizeList)
+	return columnSizeList, rowValues, nil
 }
 
-func (st *STable) adjustColumnSizes(columSizeList []int) {
+func (st *STable) adjustColumnSizes(columnSizeList []int) {
 	captionLength := len(addExtraPadding(st.caption, st.generalPadding)) + 2
 	tot := 0
-	for i := range columSizeList {
-		tot += columSizeList[i]
+	for i := range columnSizeList {
+		tot += columnSizeList[i]
 	}
 	if tot < captionLength {
 		diff := captionLength - tot
 		for diff > 0 {
-			for i := range columSizeList {
-				columSizeList[i]++
+			for i := range columnSizeList {
+				columnSizeList[i]++
 				diff--
 			}
 		}
 	}
 }
 
-func (st *STable) createHeader(columSizeList []int) string {
+func (st *STable) createHeader(columnSizeList []int) string {
 	sep := st.borderStyle.get(_BSIHorizontal)
 	c := 0
 	values := make([]string, 0, len(st.fields))
@@ -167,36 +217,11 @@ func (st *STable) createHeader(columSizeList []int) string {
 			continue
 		}
 		val := addExtraPadding(f.name, st.generalPadding)
-		val = doPadding(val, columSizeList[c], f.opts.HeaderAlignment)
+		val = doPadding(val, columnSizeList[c], f.opts.HeaderAlignment)
 		values = append(values, val)
 		c++
 	}
 	s := sep + strings.Join(values, sep) + sep + "\n"
-	return s
-}
-
-func createColumn(bs *BorderStyle, fields []*Field, values []string, columnSizeList []int) string {
-	sep := bs.get(_BSIHorizontal)
-	s := sep
-	c := 0
-	for i, f := range fields {
-		if f.IsHidden() {
-			continue
-		}
-		var val string
-		if i < len(values) {
-			// NOTE f and f.opts nil check maybe after
-			val = doPadding(values[c], columnSizeList[c], f.opts.Alignment)
-		} else {
-			val = doPadding("", columnSizeList[c], AlignmentCenter)
-		}
-		s += val
-		if i != len(fields)-1 {
-			s += sep
-		}
-		c++
-	}
-	s += sep
 	return s
 }
 

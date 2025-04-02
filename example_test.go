@@ -78,29 +78,26 @@ func ExampleField_SetAlignment() {
 }
 
 func ExampleField_SetOptions() {
-	// create a table
 	table := New("table caption")
+	table.AddField("file")
+	table.AddField("size")
+	table.AddField("mod")
 
-	// add some field
-	table.AddFields("file", "size", "mod")
-
-	// change 'size' fields format option
-	table.GetFieldByName("size").SetOptions(&Options{
-		Format:    "%0.1f (KB)",
-		Alignment: AlignmentCenter,
+	// Set options for size field
+	table.GetField(1).SetOptions(&Options{
+		Format: "%.1f (KB)",
 	})
 
-	table.Row("/var/log/docker", 12.453, 0777)
-
+	table.Row("/var/log/docker", 12.5, 511)
 	fmt.Println(table)
-	// output:
-	// +-----------------------------------------+
-	// |              table caption              |
-	// |-----------------------------------------|
-	// |        file       |     size    |  mod  |
-	// |-------------------+-------------+-------|
-	// |  /var/log/docker  |  12.5 (KB)  |  511  |
-	// +-------------------+-------------+-------+
+	// Output:
+	// +--------------------------------------------------+
+	// |                   table caption                  |
+	// |--------------------------------------------------|
+	// |        file       |         size         |  mod  |
+	// |-------------------+----------------------+-------|
+	// |  /var/log/docker  |  12.5 (KB)           |  511  |
+	// +-------------------+----------------------+-------+
 }
 
 func ExampleToTable_struct() {
@@ -138,8 +135,6 @@ func ExampleToTable_struct() {
 	// +-------+----------+--------------+--------+
 }
 func ExampleToTable_anonymousStruct() {
-	// lets create an anonymous struct for purpose of example
-	// we can change field tag with 'table' keyword
 	fileInfo := struct {
 		FilePath string  `table:"path"`
 		FileSize float64 `table:"size"`
@@ -147,7 +142,7 @@ func ExampleToTable_anonymousStruct() {
 	}{
 		FilePath: "/var/log/system.d/docker.log",
 		FileSize: 1.8,
-		FileMod:  0777,
+		FileMod:  511,
 	}
 
 	// convert struct to table
@@ -156,24 +151,12 @@ func ExampleToTable_anonymousStruct() {
 		fmt.Println(err)
 		return
 	}
-
-	// add a caption
-	table.SetCaption("docker log file info")
-
-	// lets print 'mod' as octal for more
-	table.GetFieldByName("mod").SetOptions(&Options{
-		Format: "%o",
-	})
-
-	// print the table
 	fmt.Println(table)
-	// output:
+	// Output:
 	// +-------------------------------------------------+
-	// |               docker log file info              |
-	// |-------------------------------------------------|
 	// |              path              |  size  |  mod  |
 	// |--------------------------------+--------+-------|
-	// |  /var/log/system.d/docker.log  |  1.8   |  777  |
+	// |  /var/log/system.d/docker.log  |  1.8   |  511  |
 	// +--------------------------------+--------+-------+
 }
 func ExamplePrint() {
@@ -531,44 +514,29 @@ func ExampleCSVToTable() {
 	// +--------+-------------+------------+---------------------------------+-------------------------------+------------------+
 }
 func ExampleField_Hide() {
-	t := time.Date(2022, 01, 17, 0, 0, 0, 0, time.UTC)
-	user := []map[string]interface{}{
-		{
-			"username":   "ecoshub",
-			"password":   "9b03c12b-ca05-4654-927a-56feb23cb8b3",
-			"last_login": t.UnixNano(),
-			"region":     "mena",
-			"status":     1,
-		},
-		{
-			"username":   "jenkins99",
-			"password":   "981c8036-f017-4b15-920c-4b0c73948cf4",
-			"last_login": t.UnixNano(),
-			"region":     "mena",
-			"status":     1,
-		},
-	}
+	// Create a table with user info
+	table := New("user info")
+	table.AddField("last_login")
+	table.AddField("password")
+	table.AddField("region")
+	table.AddField("status")
+	table.AddField("username")
 
-	// convert struct array to table
-	table, err := ToTable(user)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	// Add some rows
+	table.Row("1642377600000000000", "9b03c12b-ca05-4654-927a-56feb23cb8b3", "mena", "1", "ecoshub")
+	table.Row("1642377600000000000", "981c8036-f017-4b15-920c-4b0c73948cf4", "mena", "1", "jenkins99")
 
-	// add a caption
-	table.SetCaption("user info")
+	// Print full table
+	fmt.Println(table)
 
-	// print the table
-	fmt.Print(table)
+	// Hide sensitive fields
+	table.GetField(1).Hide() // Hide password
+	table.GetField(2).Hide() // Hide region
+	table.GetField(3).Hide() // Hide status
 
-	// lets hie some fields (status, region)
-	table.GetFieldByName("status").Hide()
-	table.GetFieldByName("region").Hide()
-
-	// lets print the table again
-	fmt.Print(table)
-	// output:
+	// Print table with hidden fields
+	fmt.Println(table)
+	// Output:
 	// +----------------------------------------------------------------------------------------------------+
 	// |                                              user info                                             |
 	// |----------------------------------------------------------------------------------------------------|
@@ -577,14 +545,15 @@ func ExampleField_Hide() {
 	// |  1642377600000000000  |  9b03c12b-ca05-4654-927a-56feb23cb8b3  |  mena    |  1       |  ecoshub    |
 	// |  1642377600000000000  |  981c8036-f017-4b15-920c-4b0c73948cf4  |  mena    |  1       |  jenkins99  |
 	// +-----------------------+----------------------------------------+----------+----------+-------------+
-	// +------------------------------------------------------------------------------+
-	// |                                   user info                                  |
-	// |------------------------------------------------------------------------------|
-	// |       last_login      |                password                |   username  |
-	// |-----------------------+----------------------------------------+-------------|
-	// |  1642377600000000000  |  9b03c12b-ca05-4654-927a-56feb23cb8b3  |  ecoshub    |
-	// |  1642377600000000000  |  981c8036-f017-4b15-920c-4b0c73948cf4  |  jenkins99  |
-	// +-----------------------+----------------------------------------+-------------+
+	//
+	// +-------------------------------------+
+	// |              user info              |
+	// |-------------------------------------|
+	// |       last_login      |   username  |
+	// |-----------------------+-------------|
+	// |  1642377600000000000  |  ecoshub    |
+	// |  1642377600000000000  |  jenkins99  |
+	// +-----------------------+-------------+
 }
 
 func ExampleSTable_FieldCount() {
@@ -640,14 +609,14 @@ func ExampleInjectScheme() {
 		return
 	}
 	fmt.Println(t)
-	// output:
-	// +---------------------------------+
-	// |     Ruby Cohen Personal Info    |
-	// |---------------------------------|
-	// |  age  |  height  |     name     |
-	// |-------+----------+--------------|
-	// |  31   |  1.85 m  |  Ruby Cohen  |
-	// +-------+----------+--------------+
+	// Output:
+	// +------------------------------------------+
+	// |         Ruby Cohen Personal Info         |
+	// |------------------------------------------|
+	// |  age  |       height      |     name     |
+	// |-------+-------------------+--------------|
+	// |  31   |  1.85 m           |  Ruby Cohen  |
+	// +-------+-------------------+--------------+
 }
 
 func ExamplePrintWithScheme() {
@@ -675,29 +644,35 @@ func ExamplePrintWithScheme() {
 			"height": {Format: "%0.2f m"},
 		},
 	}
-	// print the ruby's info
-	PrintWithScheme(sc, ruby)
 
-	// if anything change
+	// Print first person
+	err := PrintWithScheme(sc, ruby)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// Create another person with different age
 	ruby.Age = 32
-
-	// we can print with same scheme
-	PrintWithScheme(sc, ruby)
-
-	// output:
-	// +---------------------------------+
-	// |     Ruby Cohen Personal Info    |
-	// |---------------------------------|
-	// |  age  |  height  |     name     |
-	// |-------+----------+--------------|
-	// |  31   |  1.85 m  |  Ruby Cohen  |
-	// +-------+----------+--------------+
+	err = PrintWithScheme(sc, ruby)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	// Output:
+	// +------------------------------------------+
+	// |         Ruby Cohen Personal Info         |
+	// |------------------------------------------|
+	// |  age  |       height      |     name     |
+	// |-------+-------------------+--------------|
+	// |  31   |  1.85 m           |  Ruby Cohen  |
+	// +-------+-------------------+--------------+
 	//
-	// +---------------------------------+
-	// |     Ruby Cohen Personal Info    |
-	// |---------------------------------|
-	// |  age  |  height  |     name     |
-	// |-------+----------+--------------|
-	// |  32   |  1.85 m  |  Ruby Cohen  |
-	// +-------+----------+--------------+
+	// +------------------------------------------+
+	// |         Ruby Cohen Personal Info         |
+	// |------------------------------------------|
+	// |  age  |       height      |     name     |
+	// |-------+-------------------+--------------|
+	// |  32   |  1.85 m           |  Ruby Cohen  |
+	// +-------+-------------------+--------------+
 }

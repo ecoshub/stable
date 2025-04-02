@@ -1,60 +1,98 @@
+# Stable - Elegant ASCII Tables for Go
+
 [![Go Report Card](https://goreportcard.com/badge/github.com/ecoshub/stable)](https://goreportcard.com/report/github.com/ecoshub/stable)
-![License](https://img.shields.io/dub/l/vibe-d.svg) [![GoDoc](https://godoc.org/github.com/ecoshub/stable?status.svg)](https://godoc.org/github.com/ecoshub/stable)
+[![GoDoc](https://godoc.org/github.com/ecoshub/stable?status.svg)](https://godoc.org/github.com/ecoshub/stable)
+[![License](https://img.shields.io/github/license/ecoshub/stable)](https://github.com/ecoshub/stable/blob/master/LICENSE)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/ecoshub/stable)](https://github.com/ecoshub/stable/blob/master/go.mod)
+[![Release](https://img.shields.io/github/v/release/ecoshub/stable)](https://github.com/ecoshub/stable/releases)
 
-# Welcome to Simple Table (stable)
+Stable is a powerful and flexible Go library for creating beautiful ASCII tables. It supports a wide variety of input data types and offers extensive customization options for table formatting and display.
 
-## What is 'stable'?
-stable can create ascii table from;
--   structs
--   struct arrays
--   json encoded byte arrays
--   string interface maps
--   string interface map arrays
--   csv encoded strings
--   custom row by row values
+## ✨ Features
 
-## Functionalities
--   wide range of type support
--   value and header orientation options
--   custom print format option
--	char limiting
--   customizable border styles
--	and much more...
+- **Multiple Data Source Support**
+  - Structs and struct arrays
+  - JSON encoded byte arrays
+  - String-interface maps and map arrays
+  - CSV encoded strings
+  - Custom row-by-row values
 
-## Examples
+- **Rich Formatting Options**
+  - Customizable value and header alignment
+  - Flexible printf-style formatting
+  - Character limiting with configurable truncation
+  - Customizable border styles
+  - Field hiding and visibility control
+  - Summary calculations (sum, average, min, max)
+  - Automatic column width calculation
+  - Custom captions and headers
 
- There are a lots of examples in **[Godoc](https://godoc.org/github.com/ecoshub/stable)** page and `example_test.go` file.
+## 🚀 Quick Start
 
-## Try your self!
-anonymous struct array example:
 ```go
-	// any struct/struct array
-	persons := []struct {
-		Name      string
-		Age       int
-		Height    float64
-		Available bool
-	}{
-		{Name: "Ruby Cohen", Age: 30, Height: 1.80, Available: true},
-		{Name: "Bethany Parsons", Age: 29, Height: 1.58, Available: false},
-		{Name: "Ronnie Rodriguez", Age: 28, Height: 1.78, Available: true},
-		{Name: "Rosa Daniels", Age: 31, Height: 1.80, Available: true},
-	}
+package main
 
-	// convert it to table
-	t, err := stable.ToTable(persons)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+import (
+    "fmt"
+    "github.com/ecoshub/stable"
+)
 
-	// set the table caption
-	t.SetCaption("Customers")
+func main() {
+    // Create a new table with caption
+    table := stable.New("Users")
 
-	// print the table
-	fmt.Println(t)
+    // Add fields
+    table.AddField("Name")
+    table.AddField("Age")
+    table.AddField("Email")
 
-// output: 
+    // Add rows
+    table.Row("John Doe", 30, "john@example.com")
+    table.Row("Jane Smith", 25, "jane@example.com")
+
+    // Print the table
+    fmt.Println(table)
+
+    // Output:
+	// +-------------------------------------------+
+	// |                   Users                   |
+	// |-------------------------------------------|
+	// |     Name     |  Age  |        Email       |
+	// |--------------+-------+--------------------|
+	// |  John Doe    |  30   |  john@example.com  |
+	// |  Jane Smith  |  25   |  jane@example.com  |
+	// +--------------+-------+--------------------+
+}
+```
+
+## 📚 Examples
+
+### From Struct Array
+```go
+type Person struct {
+    Name      string
+    Age       int
+    Height    float64
+    Available bool
+}
+
+persons := []Person{
+    {Name: "Ruby Cohen", Age: 30, Height: 1.80, Available: true},
+    {Name: "Bethany Parsons", Age: 29, Height: 1.58, Available: false},
+    {Name: "Ronnie Rodriguez", Age: 28, Height: 1.78, Available: true},
+    {Name: "Rosa Daniels", Age: 31, Height: 1.80, Available: true},
+}
+
+// Convert to table
+t, err := stable.ToTable(persons)
+if err != nil {
+    fmt.Println(err)
+    return
+}
+
+t.SetCaption("Customers")
+fmt.Println(t)
+// Output:
 // +-----------------------------------------------------+
 // |                      Customers                      |
 // |-----------------------------------------------------|
@@ -67,49 +105,47 @@ anonymous struct array example:
 // +--------------------+-------+----------+-------------+
 ```
 
-## Create custom tables!
+### Custom Formatting
 ```go
-// create a table with caption
-table := stable.New("Benchmark of Hashing")
+table := stable.New("Benchmark Results")
 
-// add fields
-table.AddFields(
-	"File",
-	"File (KB)",
-	"Chunk (KB)",
-	"Time (ms)",
-)
-
-// add a field with more option
-table.AddFieldWithOptions("Prop (%)", &stable.Options{
-	Format:         "%0.2f",
-	Alignment: stable.AlignmentCenter,
+// Add fields with custom options
+table.AddField("File")
+table.AddFieldWithOptions("Size (KB)", &stable.Options{
+    Format:    "%.2f",
+    Alignment: stable.AlignmentRight,
+})
+table.AddFieldWithOptions("Time (ms)", &stable.Options{
+    Format:    "%.3f",
+    Alignment: stable.AlignmentCenter,
 })
 
-// add row
-table.Row("/var/log/sys/crontab.log", 12.515, 14.265, "32", 0.223)
-table.Row("/var/log/sys/monit.log", 85.521, 43.32, nil, 0.742)
-table.Row("/var/log/sys/logrotate.log", 96.57, nil, "31112", 0.321)
-table.Row("/var/log/sys/docker-daemon.log", 13.3511, 34.01, "3652", 0.895)
+// Add rows
+table.Row("/var/log/sys.log", 12.515, 32.223)
+table.Row("/var/log/app.log", 85.521, 311.742)
 
-// print the table
 fmt.Println(table)
-// output:
-// +------------------------------------------------------------------------------------------+
-// |                                   Benchmark of Hashing                                   |
-// |------------------------------------------------------------------------------------------|
-// |               File               |  File (KB)  |  Chunk (KB)  |  Time (ms)  |  Prop (%)  |
-// |----------------------------------+-------------+--------------+-------------+------------|
-// |  /var/log/sys/crontab.log        |  12.515     |  14.265      |  32         |    0.22    |
-// |  /var/log/sys/monit.log          |  85.521     |  43.32       |  -          |    0.74    |
-// |  /var/log/sys/logrotate.log      |  96.57      |  -           |  31112      |    0.32    |
-// |  /var/log/sys/docker-daemon.log  |  13.3511    |  34.01       |  3652       |    0.90    |
-// +----------------------------------+-------------+--------------+-------------+------------+
-
+// Output:
+// +--------------------------------------------------------+
+// |                    Benchmark Results                   |
+// |--------------------------------------------------------|
+// |        File        |    Size (KB)    |    Time (ms)    |
+// |--------------------+-----------------+-----------------|
+// |  /var/log/sys.log  |          12.52  |      32.223     |
+// |  /var/log/app.log  |          85.52  |     311.742     |
+// +--------------------+-----------------+-----------------+
 ```
-## Whats Next?
--	custom border style
 
+## 📖 Documentation
 
-## Kudos
--	[Alican Erdurmaz](https://github.com/alicanerdurmaz) for widening the type support idea
+For detailed documentation and more examples, visit:
+- [GoDoc](https://godoc.org/github.com/ecoshub/stable)
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 🙏 Acknowledgments
+
+- Inspired by various table formatting libraries
+- Built with ❤️ for the Go community
